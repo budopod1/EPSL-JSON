@@ -51,7 +51,9 @@ BJSONBool#parse_BJSONBool<Str:data><ParsingState:state> {
 }
 
 BJSONDouble#parse_BJSONDouble<Str:data><ParsingState:state> {
-    return BJSONDouble [unpack_double[take_bytes[data][state][8]]];
+    Q:val = unpack_double[data][state.i];
+    state.i += 8;
+    return BJSONDouble [val];
 }
 
 BJSONInt#parse_BJSONInt<Str:data><ParsingState:state> {
