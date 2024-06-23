@@ -40,7 +40,7 @@ BJSON {
 }
 
 BJSON#parse_BJSON<Str:data> {
-    if ([data].length == 0 || data[0] != 'B') {
+    if ([data].len == 0 || data[0] != 'B') {
         abort "Invalid BJSON start";
     };
 
@@ -55,7 +55,7 @@ BJSON#parse_BJSON<Str:data> {
     Byte:initial_id = take_byte[data][state];
     BJSON:result = parse_BJSON_val[initial_id][data][state];
     
-    if ([data].length != state.i) {
+    if ([data].len != state.i) {
         abort "Invalid BJSON: parsing finished; more data avaliable";
     };
     
@@ -63,7 +63,7 @@ BJSON#parse_BJSON<Str:data> {
 }
 
 BJSON#<BJSONObj:obj>.get<Str:key> {
-    if ([obj.keys].length != [obj.values].length) {
+    if ([obj.keys].len != [obj.values].len) {
         abort "BJSONObj number of keys and values must match";
     };
     for (W:i enumerating obj.keys) {

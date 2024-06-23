@@ -10,7 +10,7 @@ W#take_VW_int<Str:data><ParsingState:state> {
     W:result = 0;
     W:shift = 0;
     while (true) {
-        if ([data].length == state.i) {
+        if ([data].len == state.i) {
             abort "Invalid BJSON VW int";
         };
         Byte:curByte = data[state.i++];
@@ -24,7 +24,7 @@ W#take_VW_int<Str:data><ParsingState:state> {
 
 Str#take_Str<Str:data><ParsingState:state> {
     W:idx = take_VW_int[data][state];
-    if (idx >= [state.strs].length) {
+    if (idx >= [state.strs].len) {
         abort "Invalid BJSON string index";
     };
     return state.strs[idx];
@@ -33,14 +33,14 @@ Str#take_Str<Str:data><ParsingState:state> {
 Str#take_bytes<Str:data><ParsingState:state><W:count> {
     W:start = state.i;
     state.i += count;
-    if (state.i > [data].length) {
+    if (state.i > [data].len) {
         abort "Invalid BinJSON";
     };
     return [data].slice[start][state.i-1];
 }
 
 Byte#take_byte<Str:data><ParsingState:state> {
-    if ([data].length == state.i) {
+    if ([data].len == state.i) {
         abort "Invalid BJSON";
     };
     return data[state.i++];
@@ -61,11 +61,11 @@ BJSONInt#parse_BJSONInt<Str:data><ParsingState:state> {
 }
 
 BJSONList#parse_BJSONList<Str:data><ParsingState:state> {
-    W:length = take_VW_int[data][state];
+    W:len = take_VW_int[data][state];
     [BJSON]:items = [BJSON] [];
-    if (length > 0) {
+    if (len > 0) {
         Byte:sub_id = take_byte[data][state];
-        for (W:i to length) {
+        for (W:i to len) {
             [items].append[parse_BJSON_val[sub_id][data][state]];
         };
     };
@@ -73,10 +73,10 @@ BJSONList#parse_BJSONList<Str:data><ParsingState:state> {
 }
 
 BJSONList#parse_BJSONList_multityped<Str:data><ParsingState:state> {
-    W:length = take_VW_int[data][state];
+    W:len = take_VW_int[data][state];
     [BJSON]:items = [BJSON] [];
-    if (length > 0) {
-        for (W:i to length) {
+    if (len > 0) {
+        for (W:i to len) {
             Byte:sub_id = take_byte[data][state];
             [items].append[parse_BJSON_val[sub_id][data][state]];
         };
@@ -85,10 +85,10 @@ BJSONList#parse_BJSONList_multityped<Str:data><ParsingState:state> {
 }
 
 BJSONObj#parse_BJSONObj<Str:data><ParsingState:state> {
-    W:length = take_VW_int[data][state];
+    W:len = take_VW_int[data][state];
     [Str]:keys = [Str] [];
     [BJSON]:values = [BJSON] [];
-    for (W:i to length) {
+    for (W:i to len) {
         [keys].append[take_Str[data][state]];
         Byte:val_id = take_byte[data][state];
         [values].append[parse_BJSON_val[val_id][data][state]];
