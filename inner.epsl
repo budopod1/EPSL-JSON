@@ -14,9 +14,9 @@ W#take_VW_int<Str:data><ParsingState:state> {
             abort "Invalid BJSON VW int";
         };
         Byte:curByte = data[state.i++];
-        result += (curByte & 127) << shift;
+        result += [[curByte] & [127]] << [shift];
         shift += 7;
-        if (curByte & 128 == 0) {
+        if ([curByte] & [128] == 0) {
             return result;
         };
     };
