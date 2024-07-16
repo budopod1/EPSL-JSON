@@ -102,31 +102,31 @@ BJSONStr#parse_BJSONStr<Str:data><ParsingState:state> {
 
 BJSON#parse_BJSON_val<Byte:id><Str:data><ParsingState:state> {
     switch (id)
-        (1) {
-            return BJSON [parse_BJSONBool[data][state], null, null, null, null, null, null];
-        }
-        (2) {
-            return BJSON [null, parse_BJSONDouble[data][state], null, null, null, null, null];
-        }
-        (3) {
-            return BJSON [null, null, parse_BJSONInt[data][state], null, null, null, null];
-        }
-        (4) {
-            return BJSON [null, null, null, parse_BJSONList[data][state], null, null, null];
-        }
-        (5) {
-            return BJSON [null, null, null, null, BJSONNull [], null, null];
-        }
-        (6) {
-            return BJSON [null, null, null, null, null, parse_BJSONObj[data][state], null];
-        }
-        (7) {
-            return BJSON [null, null, null, null, null, null, parse_BJSONStr[data][state]];
-        }
-        (8) {
-            return BJSON [null, null, null, parse_BJSONList_multityped[data][state], null, null, null];
-        }
-        {
-            abort "Invalid BJSON ID";
-        };
+    (1) {
+        return BJSON [parse_BJSONBool[data][state], null, null, null, null, null, null];
+    }
+    (2) {
+        return BJSON [null, parse_BJSONDouble[data][state], null, null, null, null, null];
+    }
+    (3) {
+        return BJSON [null, null, parse_BJSONInt[data][state], null, null, null, null];
+    }
+    (4) {
+        return BJSON [null, null, null, parse_BJSONList[data][state], null, null, null];
+    }
+    (5) {
+        return BJSON [null, null, null, null, BJSONNull [], null, null];
+    }
+    (6) {
+        return BJSON [null, null, null, null, null, parse_BJSONObj[data][state], null];
+    }
+    (7) {
+        return BJSON [null, null, null, null, null, null, parse_BJSONStr[data][state]];
+    }
+    (8) {
+        return BJSON [null, null, null, parse_BJSONList_multityped[data][state], null, null, null];
+    }
+    {
+        abort "Invalid BJSON ID";
+    };
 }

@@ -1,4 +1,4 @@
 {
-    "command_options": ["-t", "package"],
+    "command_options": ["-t", "package-obj"],
     "libraries": []
 }
