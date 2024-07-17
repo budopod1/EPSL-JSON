@@ -54,11 +54,11 @@ BJSON#parse_BJSON<Str:data> {
 
     Byte:initial_id = take_byte[data][state];
     BJSON:result = parse_BJSON_val[initial_id][data][state];
-    
+
     if ([data].len != state.i) {
         abort "Invalid BJSON: parsing finished; more data avaliable";
     };
-    
+
     return result;
 }
 
