@@ -1,70 +1,98 @@
 #import inner;
 
-BJSONBool {
+BinJSONBool {
     Bool:val
 }
 
-BJSONDouble {
+BinJSONDouble {
     Q:val
 }
 
-BJSONInt {
+BinJSONInt {
     Z:val
 }
 
-BJSONList {
-    [BJSON]:items
+BinJSONList {
+    [BinJSON]:items
 }
 
-BJSONNull {
+BinJSONNull {
 
 }
 
-BJSONObj {
+BinJSONObj {
     [Str]:keys,
-    [BJSON]:values
+    [BinJSON]:values
 }
 
-BJSONStr {
+BinJSONStr {
     Str:val
 }
 
-BJSON {
-    BJSONBool?:bool,
-    BJSONDouble?:double,
-    BJSONInt?:int,
-    BJSONList?:list,
-    BJSONNull?:null_,
-    BJSONObj?:obj,
-    BJSONStr?:str
+BinJSON {
+    BinJSONBool?:bool,
+    BinJSONDouble?:double,
+    BinJSONInt?:int,
+    BinJSONList?:list,
+    BinJSONNull?:null_,
+    BinJSONObj?:obj,
+    BinJSONStr?:str
 }
 
-BJSON#parse_BJSON<Str:data> {
+BinJSON#parse_BinJSON<Str:data> {
     if ([data].len == 0 || data[0] != 'B') {
-        abort "Invalid BJSON start";
+        abort "Invalid BinJSON start";
     };
 
     [Str]:strs = [Str] [];
     ParsingState:state = ParsingState [1, strs];
-    W:string_count = take_VW_int[data][state];
+    W:string_count = take_VW_uint[data][state];
     for (W:i to string_count) {
-        W:string_len = take_VW_int[data][state];
+        W:string_len = take_VW_uint[data][state];
         [strs].append[take_bytes[data][state][string_len]];
     };
 
     Byte:initial_id = take_byte[data][state];
-    BJSON:result = parse_BJSON_val[initial_id][data][state];
+    BinJSON:result = parse_BinJSON_val[initial_id][data][state];
 
     if ([data].len != state.i) {
-        abort "Invalid BJSON: parsing finished; more data avaliable";
+        abort "Invalid BinJSON: parsing finished; more data avaliable";
     };
 
     return result;
 }
 
-BJSON#<BJSONObj:obj>.get<Str:key> {
+Bool#<BinJSON:binjson>.get_bool {
+    return [binjson.bool].unwrap.val;
+}
+
+Q#<BinJSON:binjson>.get_double {
+    return [binjson.double].unwrap.val;
+}
+
+Z#<BinJSON:binjson>.get_int {
+    return [binjson.int].unwrap.val;
+}
+
+[BinJSON]#<BinJSON:binjson>.get_list {
+    return [binjson.list].unwrap.items;
+}
+
+Bool#<BinJSON:binjson>.is_null {
+    return ![binjson.null_].is_null;
+}
+
+BinJSONObj#<BinJSON:binjson>.get_obj {
+    return [binjson.obj].unwrap;
+}
+
+Str#<BinJSON:binjson>.get_str {
+    return [binjson.str].unwrap.val;
+}
+
+BinJSON#<BinJSONObj:obj>.get<Str:key> {
     if ([obj.keys].len != [obj.values].len) {
-        abort "BJSONObj number of keys and values must match";
+        abort "BinJSONObj number of keys and values must match";
     };
     for (W:i enumerating obj.keys) {
         if ([obj.keys[i]] equals [key]) {
@@ -72,4 +100,8 @@ BJSON#<BJSONObj:obj>.get<Str:key> {
         };
     };
     abort "Requested key not found";
+}
+
+BinJSON#<BinJSON:obj>.get<Str:key> {
+    return [[obj].get_obj].get[key];
 }
