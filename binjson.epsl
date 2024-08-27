@@ -99,9 +99,22 @@ BinJSON#<BinJSONObj:obj>.get<Str:key> {
             return obj.values[i];
         };
     };
-    abort "Requested key not found";
+    abort "Requested key '{}' not found" % key;
+}
+
+Bool#<BinJSONObj:obj>.contains_key<Str:target_key> {
+    for (Str:key in obj.keys) {
+        if ([key] equals [target_key]) {
+            return true;
+        };
+    };
+    return false;
 }
 
 BinJSON#<BinJSON:obj>.get<Str:key> {
     return [[obj].get_obj].get[key];
+}
+
+Bool#<BinJSON:obj>.contains_key<Str:target_key> {
+    return [[obj].get_obj].contains_key[target_key];
 }
