@@ -59,7 +59,7 @@ BinJSONBool#parse_BinJSONBool<Str:data><ParsingState:state> {
 }
 
 BinJSONDouble#parse_BinJSONDouble<Str:data><ParsingState:state> {
-    Q:val = unpack_double[data][state.i];
+    Q:val = unpack_Q64[data][state.i];
     state.i += 8;
     return BinJSONDouble [val];
 }
