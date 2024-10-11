@@ -6,14 +6,6 @@ ParsingState {
     [Str]:strs
 }
 
-// normal bitshift is broken in Epsilon
-Z#polyfill <Z:a> left bitshift <W:b> {
-    for (W:i to b) {
-        a *= 2;
-    };
-    return a;
-}
-
 W#take_VW_uint<Str:data><ParsingState:state> {
     W:result = 0;
     W:shift = 0;
@@ -22,7 +14,7 @@ W#take_VW_uint<Str:data><ParsingState:state> {
             abort "Invalid BinJSON VW int";
         };
         Byte:curByte = data[state.i++];
-        result += polyfill [[curByte] & [127]] left bitshift [shift];
+        result += [[curByte] & [127]] << [shift];
         shift += 7;
         if ([curByte] & [128] == 0) {
             return result;
