@@ -14,7 +14,7 @@ W#take_VW_uint<Str:data><ParsingState:state> {
             abort "Invalid BinJSON VW int";
         };
         Byte:curByte = data[state.i++];
-        result += [[curByte] & [127]] << [shift];
+        result += [[(W)curByte] & [127]] << [shift];
         shift += 7;
         if ([curByte] & [128] == 0) {
             return result;
@@ -36,7 +36,7 @@ Str#take_bytes<Str:data><ParsingState:state><W:count> {
     if (state.i > [data].len) {
         abort "Invalid BinJSON";
     };
-    return [data].slice[start][state.i-1];
+    return [data].slice[start][state.i];
 }
 
 Byte#take_byte<Str:data><ParsingState:state> {
