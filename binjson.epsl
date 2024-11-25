@@ -39,7 +39,7 @@ BinJSON {
     BinJSONStr?:str
 }
 
-BinJSON#parse_BinJSON<Str:data> {
+BinJSON#parse_BinJSON[Str:data] {
     if ([data].len == 0 || data[0] != 'B') {
         abort "Invalid BinJSON start";
     };
@@ -62,35 +62,35 @@ BinJSON#parse_BinJSON<Str:data> {
     return result;
 }
 
-Bool#<BinJSON:binjson>.get_bool {
+Bool#[BinJSON:binjson].get_bool {
     return [binjson.bool].unwrap.val;
 }
 
-Q#<BinJSON:binjson>.get_double {
+Q#[BinJSON:binjson].get_double {
     return [binjson.double].unwrap.val;
 }
 
-Z#<BinJSON:binjson>.get_int {
+Z#[BinJSON:binjson].get_int {
     return [binjson.int].unwrap.val;
 }
 
-[BinJSON]#<BinJSON:binjson>.get_list {
+[BinJSON]#[BinJSON:binjson].get_list {
     return [binjson.list].unwrap.items;
 }
 
-Bool#<BinJSON:binjson>.is_null {
+Bool#[BinJSON:binjson].is_null {
     return ![binjson.null_].is_null;
 }
 
-BinJSONObj#<BinJSON:binjson>.get_obj {
+BinJSONObj#[BinJSON:binjson].get_obj {
     return [binjson.obj].unwrap;
 }
 
-Str#<BinJSON:binjson>.get_str {
+Str#[BinJSON:binjson].get_str {
     return [binjson.str].unwrap.val;
 }
 
-BinJSON#<BinJSONObj:obj>.get<Str:key> {
+BinJSON#[BinJSONObj:obj].get[Str:key] {
     if ([obj.keys].len != [obj.values].len) {
         abort "BinJSONObj number of keys and values must match";
     };
@@ -102,7 +102,7 @@ BinJSON#<BinJSONObj:obj>.get<Str:key> {
     abort "Requested key '{}' not found" % key;
 }
 
-Bool#<BinJSONObj:obj>.contains_key<Str:target_key> {
+Bool#[BinJSONObj:obj].contains_key[Str:target_key] {
     for (Str:key in obj.keys) {
         if ([key] equals [target_key]) {
             return true;
@@ -111,10 +111,10 @@ Bool#<BinJSONObj:obj>.contains_key<Str:target_key> {
     return false;
 }
 
-BinJSON#<BinJSON:obj>.get<Str:key> {
+BinJSON#[BinJSON:obj].get[Str:key] {
     return [[obj].get_obj].get[key];
 }
 
-Bool#<BinJSON:obj>.contains_key<Str:target_key> {
+Bool#[BinJSON:obj].contains_key[Str:target_key] {
     return [[obj].get_obj].contains_key[target_key];
 }
