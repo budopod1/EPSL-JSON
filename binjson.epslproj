@@ -1,4 +1,4 @@
 {
-    "command_options": ["-t", "package-obj"],
+    "command_options": ["-t", "package-both"],
     "libraries": []
 }
