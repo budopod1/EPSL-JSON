@@ -1,4 +1,3 @@
 {
-    "command_options": ["-t", "package-both"],
-    "libraries": []
+    "output-type": "package-both"
 }
