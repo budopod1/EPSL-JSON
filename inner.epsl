@@ -62,7 +62,7 @@ BinJSONInt#parse_BinJSONInt[Str:data][ParsingState:state] {
 
 BinJSONList#parse_BinJSONList[Str:data][ParsingState:state] {
     W:len = take_VW_uint[data][state];
-    [BinJSON]:items = [BinJSON] [];
+    [:BinJSON]:items = [:BinJSON] [];
     if (len > 0) {
         Byte:sub_id = take_byte[data][state];
         for (W:i to len) {
@@ -74,7 +74,7 @@ BinJSONList#parse_BinJSONList[Str:data][ParsingState:state] {
 
 BinJSONList#parse_BinJSONList_multityped[Str:data][ParsingState:state] {
     W:len = take_VW_uint[data][state];
-    [BinJSON]:items = [BinJSON] [];
+    [:BinJSON]:items = [:BinJSON] [];
     if (len > 0) {
         for (W:i to len) {
             Byte:sub_id = take_byte[data][state];
@@ -87,7 +87,7 @@ BinJSONList#parse_BinJSONList_multityped[Str:data][ParsingState:state] {
 BinJSONObj#parse_BinJSONObj[Str:data][ParsingState:state] {
     W:len = take_VW_uint[data][state];
     [Str]:keys = [Str] [];
-    [BinJSON]:values = [BinJSON] [];
+    [:BinJSON]:values = [:BinJSON] [];
     for (W:i to len) {
         [keys].append[take_Str[data][state]];
         Byte:val_id = take_byte[data][state];
@@ -100,31 +100,31 @@ BinJSONStr#parse_BinJSONStr[Str:data][ParsingState:state] {
     return BinJSONStr [take_Str[data][state]];
 }
 
-BinJSON#parse_BinJSON_val[Byte:id][Str:data][ParsingState:state] {
+:BinJSON#parse_BinJSON_val[Byte:id][Str:data][ParsingState:state] {
     switch (id)
     (1) {
-        return BinJSON [parse_BinJSONBool[data][state], null, null, null, null, null, null];
+        return parse_BinJSONBool[data][state];
     }
     (2) {
-        return BinJSON [null, parse_BinJSONDouble[data][state], null, null, null, null, null];
+        return parse_BinJSONDouble[data][state];
     }
     (3) {
-        return BinJSON [null, null, parse_BinJSONInt[data][state], null, null, null, null];
+        return parse_BinJSONInt[data][state];
     }
     (4) {
-        return BinJSON [null, null, null, parse_BinJSONList[data][state], null, null, null];
+        return parse_BinJSONList[data][state];
     }
     (5) {
-        return BinJSON [null, null, null, null, BinJSONNull [], null, null];
+        return BinJSONNull [];
     }
     (6) {
-        return BinJSON [null, null, null, null, null, parse_BinJSONObj[data][state], null];
+        return parse_BinJSONObj[data][state];
     }
     (7) {
-        return BinJSON [null, null, null, null, null, null, parse_BinJSONStr[data][state]];
+        return parse_BinJSONStr[data][state];
     }
     (8) {
-        return BinJSON [null, null, null, parse_BinJSONList_multityped[data][state], null, null, null];
+        return parse_BinJSONList_multityped[data][state];
     }
     {
         abort "Invalid BinJSON ID";
