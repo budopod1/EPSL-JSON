@@ -1,5 +1,5 @@
 #import binjson;
-#import packing;
+#import conversion;
 
 ParsingState {
     W:i,
