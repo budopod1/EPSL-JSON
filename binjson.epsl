@@ -63,31 +63,31 @@ BinJSONStr {
 }
 
 Bool#[:BinJSON:binjson].get_bool {
-    return [(BinJSONBool)binjson].unwrap.val;
+    return [(BinJSONBool?)binjson].unwrap.val;
 }
 
 Q#[:BinJSON:binjson].get_double {
-    return [(BinJSONDouble)binjson].unwrap.val;
+    return [(BinJSONDouble?)binjson].unwrap.val;
 }
 
 Z#[:BinJSON:binjson].get_int {
-    return [(BinJSONInt)binjson].unwrap.val;
+    return [(BinJSONInt?)binjson].unwrap.val;
 }
 
 [:BinJSON]#[:BinJSON:binjson].get_list {
-    return [(BinJSONList)binjson].unwrap.val;
+    return [(BinJSONList?)binjson].unwrap.items;
 }
 
 Bool#[:BinJSON:binjson].is_null {
-    return ![(BinJSONNull)binjson].is_null;
+    return ![(BinJSONNull?)binjson].is_null;
 }
 
 BinJSONObj#[:BinJSON:binjson].get_obj {
-    return [(BinJSONObj)binjson].unwrap;
+    return [(BinJSONObj?)binjson].unwrap;
 }
 
 Str#[:BinJSON:binjson].get_str {
-    return [(BinJSONStr)binjson].unwrap.val;
+    return [(BinJSONStr?)binjson].unwrap.val;
 }
 
 :BinJSON#[BinJSONObj:obj].get[Str:key] {
