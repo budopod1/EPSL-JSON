@@ -1,45 +1,45 @@
 #import inner;
 
+@super;
+BinJSON {}
+
+@extends BinJSON;
 BinJSONBool {
     Bool:val
 }
 
+@extends BinJSON;
 BinJSONDouble {
     Q:val
 }
 
+@extends BinJSON;
 BinJSONInt {
     Z:val
 }
 
+@extends BinJSON;
 BinJSONList {
-    [BinJSON]:items
+    [:BinJSON]:items
 }
 
+@extends BinJSON;
 BinJSONNull {
 
 }
 
+@extends BinJSON;
 BinJSONObj {
     [Str]:keys,
-    [BinJSON]:values
+    [:BinJSON]:values
 }
 
+@extends BinJSON;
 BinJSONStr {
     Str:val
 }
 
-BinJSON {
-    BinJSONBool?:bool,
-    BinJSONDouble?:double,
-    BinJSONInt?:int,
-    BinJSONList?:list,
-    BinJSONNull?:null_,
-    BinJSONObj?:obj,
-    BinJSONStr?:str
-}
-
-BinJSON#parse_BinJSON[Str:data] {
+:BinJSON#parse_BinJSON[Str:data] {
     if ([data].len == 0 || data[0] != 'B') {
         abort "Invalid BinJSON start";
     };
@@ -53,7 +53,7 @@ BinJSON#parse_BinJSON[Str:data] {
     };
 
     Byte:initial_id = take_byte[data][state];
-    BinJSON:result = parse_BinJSON_val[initial_id][data][state];
+    :BinJSON:result = parse_BinJSON_val[initial_id][data][state];
 
     if ([data].len != state.i) {
         abort "Invalid BinJSON: parsing finished; more data avaliable";
@@ -62,35 +62,35 @@ BinJSON#parse_BinJSON[Str:data] {
     return result;
 }
 
-Bool#[BinJSON:binjson].get_bool {
-    return [binjson.bool].unwrap.val;
+Bool#[:BinJSON:binjson].get_bool {
+    return [(BinJSONBool)binjson].unwrap.val;
 }
 
-Q#[BinJSON:binjson].get_double {
-    return [binjson.double].unwrap.val;
+Q#[:BinJSON:binjson].get_double {
+    return [(BinJSONDouble)binjson].unwrap.val;
 }
 
-Z#[BinJSON:binjson].get_int {
-    return [binjson.int].unwrap.val;
+Z#[:BinJSON:binjson].get_int {
+    return [(BinJSONInt)binjson].unwrap.val;
 }
 
-[BinJSON]#[BinJSON:binjson].get_list {
-    return [binjson.list].unwrap.items;
+[:BinJSON]#[:BinJSON:binjson].get_list {
+    return [(BinJSONList)binjson].unwrap.val;
 }
 
-Bool#[BinJSON:binjson].is_null {
-    return ![binjson.null_].is_null;
+Bool#[:BinJSON:binjson].is_null {
+    return ![(BinJSONNull)binjson].is_null;
 }
 
-BinJSONObj#[BinJSON:binjson].get_obj {
-    return [binjson.obj].unwrap;
+BinJSONObj#[:BinJSON:binjson].get_obj {
+    return [(BinJSONObj)binjson].unwrap;
 }
 
-Str#[BinJSON:binjson].get_str {
-    return [binjson.str].unwrap.val;
+Str#[:BinJSON:binjson].get_str {
+    return [(BinJSONStr)binjson].unwrap.val;
 }
 
-BinJSON#[BinJSONObj:obj].get[Str:key] {
+:BinJSON#[BinJSONObj:obj].get[Str:key] {
     if ([obj.keys].len != [obj.values].len) {
         abort "BinJSONObj number of keys and values must match";
     };
@@ -111,10 +111,10 @@ Bool#[BinJSONObj:obj].contains_key[Str:target_key] {
     return false;
 }
 
-BinJSON#[BinJSON:obj].get[Str:key] {
+:BinJSON#[:BinJSON:obj].get[Str:key] {
     return [[obj].get_obj].get[key];
 }
 
-Bool#[BinJSON:obj].contains_key[Str:target_key] {
+Bool#[:BinJSON:obj].contains_key[Str:target_key] {
     return [[obj].get_obj].contains_key[target_key];
 }
