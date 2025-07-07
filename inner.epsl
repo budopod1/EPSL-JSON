@@ -46,61 +46,61 @@ Byte#take_byte[Str:data][ParsingState:state] {
     return data[state.i++];
 }
 
-BinJSONBool#parse_BinJSONBool[Str:data][ParsingState:state] {
-    return BinJSONBool [(Bool)take_byte[data][state]];
+JSONBool#parse_BinJSONBool[Str:data][ParsingState:state] {
+    return JSONBool [(Bool)take_byte[data][state]];
 }
 
-BinJSONDouble#parse_BinJSONDouble[Str:data][ParsingState:state] {
+JSONDouble#parse_BinJSONDouble[Str:data][ParsingState:state] {
     Q:val = unpack_Q64[data][state.i];
     state.i += 8;
-    return BinJSONDouble [val];
+    return JSONDouble [val];
 }
 
-BinJSONInt#parse_BinJSONInt[Str:data][ParsingState:state] {
-    return BinJSONInt[(Z)take_VW_uint[data][state]];
+JSONInt#parse_BinJSONInt[Str:data][ParsingState:state] {
+    return JSONInt[(Z)take_VW_uint[data][state]];
 }
 
-BinJSONList#parse_BinJSONList[Str:data][ParsingState:state] {
+JSONList#parse_BinJSONList[Str:data][ParsingState:state] {
     W:len = take_VW_uint[data][state];
-    [:BinJSON]:items = [:BinJSON] [];
+    [:JSON]:items = [:JSON] [];
     if (len > 0) {
         Byte:sub_id = take_byte[data][state];
         for (W:i to len) {
             [items].append[parse_BinJSON_val[sub_id][data][state]];
         };
     };
-    return BinJSONList [items];
+    return JSONList [items];
 }
 
-BinJSONList#parse_BinJSONList_multityped[Str:data][ParsingState:state] {
+JSONList#parse_BinJSONList_multityped[Str:data][ParsingState:state] {
     W:len = take_VW_uint[data][state];
-    [:BinJSON]:items = [:BinJSON] [];
+    [:JSON]:items = [:JSON] [];
     if (len > 0) {
         for (W:i to len) {
             Byte:sub_id = take_byte[data][state];
             [items].append[parse_BinJSON_val[sub_id][data][state]];
         };
     };
-    return BinJSONList [items];
+    return JSONList [items];
 }
 
-BinJSONObj#parse_BinJSONObj[Str:data][ParsingState:state] {
+JSONObj#parse_BinJSONObj[Str:data][ParsingState:state] {
     W:len = take_VW_uint[data][state];
     [Str]:keys = [Str] [];
-    [:BinJSON]:values = [:BinJSON] [];
+    [:JSON]:values = [:JSON] [];
     for (W:i to len) {
         [keys].append[take_Str[data][state]];
         Byte:val_id = take_byte[data][state];
         [values].append[parse_BinJSON_val[val_id][data][state]];
     };
-    return BinJSONObj [keys, values];
+    return JSONObj [keys, values];
 }
 
-BinJSONStr#parse_BinJSONStr[Str:data][ParsingState:state] {
-    return BinJSONStr [take_Str[data][state]];
+JSONStr#parse_BinJSONStr[Str:data][ParsingState:state] {
+    return JSONStr [take_Str[data][state]];
 }
 
-:BinJSON#parse_BinJSON_val[Byte:id][Str:data][ParsingState:state] {
+:JSON#parse_BinJSON_val[Byte:id][Str:data][ParsingState:state] {
     switch (id)
     (1) {
         return parse_BinJSONBool[data][state];
@@ -115,7 +115,7 @@ BinJSONStr#parse_BinJSONStr[Str:data][ParsingState:state] {
         return parse_BinJSONList[data][state];
     }
     (5) {
-        return BinJSONNull [];
+        return JSONNull [];
     }
     (6) {
         return parse_BinJSONObj[data][state];

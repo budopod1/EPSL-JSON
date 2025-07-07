@@ -1,45 +1,45 @@
 #import inner;
 
 @super;
-BinJSON {}
+JSON {}
 
-@extends BinJSON;
-BinJSONBool {
+@extends JSON;
+JSONBool {
     Bool:val
 }
 
-@extends BinJSON;
-BinJSONDouble {
+@extends JSON;
+JSONDouble {
     Q:val
 }
 
-@extends BinJSON;
-BinJSONInt {
+@extends JSON;
+JSONInt {
     Z:val
 }
 
-@extends BinJSON;
-BinJSONList {
-    [:BinJSON]:items
+@extends JSON;
+JSONList {
+    [:JSON]:items
 }
 
-@extends BinJSON;
-BinJSONNull {
+@extends JSON;
+JSONNull {
 
 }
 
-@extends BinJSON;
-BinJSONObj {
+@extends JSON;
+JSONObj {
     [Str]:keys,
-    [:BinJSON]:values
+    [:JSON]:values
 }
 
-@extends BinJSON;
-BinJSONStr {
+@extends JSON;
+JSONStr {
     Str:val
 }
 
-:BinJSON#parse_BinJSON[Str:data] {
+:JSON#parse_BinJSON[Str:data] {
     if ([data].len == 0 || data[0] != 'B') {
         abort "Invalid BinJSON start";
     };
@@ -53,7 +53,7 @@ BinJSONStr {
     };
 
     Byte:initial_id = take_byte[data][state];
-    :BinJSON:result = parse_BinJSON_val[initial_id][data][state];
+    :JSON:result = parse_BinJSON_val[initial_id][data][state];
 
     if ([data].len != state.i) {
         abort "Invalid BinJSON: parsing finished; more data avaliable";
@@ -62,37 +62,37 @@ BinJSONStr {
     return result;
 }
 
-Bool#[:BinJSON:binjson].get_bool {
-    return [(BinJSONBool?)binjson].unwrap.val;
+Bool#[:JSON:json].get_bool {
+    return [(JSONBool?)json].unwrap.val;
 }
 
-Q#[:BinJSON:binjson].get_double {
-    return [(BinJSONDouble?)binjson].unwrap.val;
+Q#[:JSON:json].get_double {
+    return [(JSONDouble?)json].unwrap.val;
 }
 
-Z#[:BinJSON:binjson].get_int {
-    return [(BinJSONInt?)binjson].unwrap.val;
+Z#[:JSON:json].get_int {
+    return [(JSONInt?)json].unwrap.val;
 }
 
-[:BinJSON]#[:BinJSON:binjson].get_list {
-    return [(BinJSONList?)binjson].unwrap.items;
+[:JSON]#[:JSON:json].get_list {
+    return [(JSONList?)json].unwrap.items;
 }
 
-Bool#[:BinJSON:binjson].is_null {
-    return ![(BinJSONNull?)binjson].is_null;
+Bool#[:JSON:json].is_null {
+    return ![(JSONNull?)json].is_null;
 }
 
-BinJSONObj#[:BinJSON:binjson].get_obj {
-    return [(BinJSONObj?)binjson].unwrap;
+JSONObj#[:JSON:json].get_obj {
+    return [(JSONObj?)json].unwrap;
 }
 
-Str#[:BinJSON:binjson].get_str {
-    return [(BinJSONStr?)binjson].unwrap.val;
+Str#[:JSON:json].get_str {
+    return [(JSONStr?)json].unwrap.val;
 }
 
-:BinJSON#[BinJSONObj:obj].get[Str:key] {
+:JSON#[JSONObj:obj].get[Str:key] {
     if ([obj.keys].len != [obj.values].len) {
-        abort "BinJSONObj number of keys and values must match";
+        abort "JSONObj number of keys and values must match";
     };
     for (W:i enumerating obj.keys) {
         if ([obj.keys[i]] equals [key]) {
@@ -102,7 +102,7 @@ Str#[:BinJSON:binjson].get_str {
     abort "Requested key '{}' not found" % key;
 }
 
-Bool#[BinJSONObj:obj].contains_key[Str:target_key] {
+Bool#[JSONObj:obj].contains_key[Str:target_key] {
     for (Str:key in obj.keys) {
         if ([key] equals [target_key]) {
             return true;
@@ -111,10 +111,10 @@ Bool#[BinJSONObj:obj].contains_key[Str:target_key] {
     return false;
 }
 
-:BinJSON#[:BinJSON:obj].get[Str:key] {
+:JSON#[:JSON:obj].get[Str:key] {
     return [[obj].get_obj].get[key];
 }
 
-Bool#[:BinJSON:obj].contains_key[Str:target_key] {
+Bool#[:JSON:obj].contains_key[Str:target_key] {
     return [[obj].get_obj].contains_key[target_key];
 }
