@@ -1,0 +1,120 @@
+#import binjson;
+
+@super;
+JSON {}
+
+@extends JSON;
+JSONBool {
+    Bool:val
+}
+
+@extends JSON;
+JSONDouble {
+    Q:val
+}
+
+@extends JSON;
+JSONInt {
+    Z:val
+}
+
+@extends JSON;
+JSONList {
+    [:JSON]:items
+}
+
+@extends JSON;
+JSONNull {
+
+}
+
+@extends JSON;
+JSONObj {
+    [Str]:keys,
+    [:JSON]:values
+}
+
+@extends JSON;
+JSONStr {
+    Str:val
+}
+
+:JSON#parse_BinJSON[Str:data] {
+    if ([data].len == 0 || data[0] != 'B') {
+        abort "Invalid BinJSON start";
+    };
+
+    [Str]:strs = [Str] [];
+    ParsingState:state = ParsingState [1, strs];
+    W:string_count = take_VW_uint[data][state];
+    for (W:i to string_count) {
+        W:string_len = take_VW_uint[data][state];
+        [strs].append[take_bytes[data][state][string_len]];
+    };
+
+    Byte:initial_id = take_byte[data][state];
+    :JSON:result = parse_BinJSON_val[initial_id][data][state];
+
+    if ([data].len != state.i) {
+        abort "Invalid BinJSON: parsing finished; more data avaliable";
+    };
+
+    return result;
+}
+
+Bool#[:JSON:json].get_bool {
+    return [(JSONBool?)json].unwrap.val;
+}
+
+Q#[:JSON:json].get_double {
+    return [(JSONDouble?)json].unwrap.val;
+}
+
+Z#[:JSON:json].get_int {
+    return [(JSONInt?)json].unwrap.val;
+}
+
+[:JSON]#[:JSON:json].get_list {
+    return [(JSONList?)json].unwrap.items;
+}
+
+Bool#[:JSON:json].is_null {
+    return ![(JSONNull?)json].is_null;
+}
+
+JSONObj#[:JSON:json].get_obj {
+    return [(JSONObj?)json].unwrap;
+}
+
+Str#[:JSON:json].get_str {
+    return [(JSONStr?)json].unwrap.val;
+}
+
+:JSON#[JSONObj:obj].get[Str:key] {
+    if ([obj.keys].len != [obj.values].len) {
+        abort "JSONObj number of keys and values must match";
+    };
+    for (W:i enumerating obj.keys) {
+        if ([obj.keys[i]] equals [key]) {
+            return obj.values[i];
+        };
+    };
+    abort "Requested key '{}' not found" % key;
+}
+
+Bool#[JSONObj:obj].contains_key[Str:target_key] {
+    for (Str:key in obj.keys) {
+        if ([key] equals [target_key]) {
+            return true;
+        };
+    };
+    return false;
+}
+
+:JSON#[:JSON:obj].get[Str:key] {
+    return [[obj].get_obj].get[key];
+}
+
+Bool#[:JSON:obj].contains_key[Str:target_key] {
+    return [[obj].get_obj].contains_key[target_key];
+}
