@@ -1,12 +1,12 @@
 #import json;
 #import conversion;
 
-ParsingState {
+BinParsingState {
     W:i,
     [Str]:strs
 }
 
-W#take_VW_uint[Str:data][ParsingState:state] {
+W#take_VW_uint[Str:data][BinParsingState:state] {
     W:result = 0;
     W:shift = 0;
     while (true) {
@@ -22,7 +22,7 @@ W#take_VW_uint[Str:data][ParsingState:state] {
     };
 }
 
-Str#take_Str[Str:data][ParsingState:state] {
+Str#take_Str[Str:data][BinParsingState:state] {
     W:idx = take_VW_uint[data][state];
     if (idx >= [state.strs].len) {
         abort "Invalid BinJSON string index";
@@ -30,7 +30,7 @@ Str#take_Str[Str:data][ParsingState:state] {
     return state.strs[idx];
 }
 
-Str#take_bytes[Str:data][ParsingState:state][W:count] {
+Str#take_bytes[Str:data][BinParsingState:state][W:count] {
     W:start = state.i;
     state.i += count;
     if (state.i > [data].len) {
@@ -39,28 +39,28 @@ Str#take_bytes[Str:data][ParsingState:state][W:count] {
     return [data].slice[start][state.i];
 }
 
-Byte#take_byte[Str:data][ParsingState:state] {
+Byte#take_byte[Str:data][BinParsingState:state] {
     if ([data].len == state.i) {
         abort "Invalid BinJSON";
     };
     return data[state.i++];
 }
 
-JSONBool#parse_BinJSONBool[Str:data][ParsingState:state] {
-    return JSONBool [(Bool)take_byte[data][state]];
+JSONBool#parse_BinJSONBool[Str:data][BinParsingState:state] {
+    return JSONBool [/*span:*/null, (Bool)take_byte[data][state]];
 }
 
-JSONDouble#parse_BinJSONDouble[Str:data][ParsingState:state] {
+JSONDouble#parse_BinJSONDouble[Str:data][BinParsingState:state] {
     Q:val = unpack_Q64[data][state.i];
     state.i += 8;
-    return JSONDouble [val];
+    return JSONDouble [/*span:*/null, val];
 }
 
-JSONInt#parse_BinJSONInt[Str:data][ParsingState:state] {
-    return JSONInt[(Z)take_VW_uint[data][state]];
+JSONInt#parse_BinJSONInt[Str:data][BinParsingState:state] {
+    return JSONInt [/*span:*/null, (Z)take_VW_uint[data][state]];
 }
 
-JSONList#parse_BinJSONList[Str:data][ParsingState:state] {
+JSONList#parse_BinJSONList[Str:data][BinParsingState:state] {
     W:len = take_VW_uint[data][state];
     [:JSON]:items = [:JSON] [];
     if (len > 0) {
@@ -69,10 +69,10 @@ JSONList#parse_BinJSONList[Str:data][ParsingState:state] {
             [items].append[parse_BinJSON_val[sub_id][data][state]];
         };
     };
-    return JSONList [items];
+    return JSONList [/*span:*/null, items];
 }
 
-JSONList#parse_BinJSONList_multityped[Str:data][ParsingState:state] {
+JSONList#parse_BinJSONList_multityped[Str:data][BinParsingState:state] {
     W:len = take_VW_uint[data][state];
     [:JSON]:items = [:JSON] [];
     if (len > 0) {
@@ -81,10 +81,10 @@ JSONList#parse_BinJSONList_multityped[Str:data][ParsingState:state] {
             [items].append[parse_BinJSON_val[sub_id][data][state]];
         };
     };
-    return JSONList [items];
+    return JSONList [/*span:*/null, items];
 }
 
-JSONObj#parse_BinJSONObj[Str:data][ParsingState:state] {
+JSONObj#parse_BinJSONObj[Str:data][BinParsingState:state] {
     W:len = take_VW_uint[data][state];
     [Str]:keys = [Str] [];
     [:JSON]:values = [:JSON] [];
@@ -93,14 +93,14 @@ JSONObj#parse_BinJSONObj[Str:data][ParsingState:state] {
         Byte:val_id = take_byte[data][state];
         [values].append[parse_BinJSON_val[val_id][data][state]];
     };
-    return JSONObj [keys, values];
+    return JSONObj [/*span:*/null, keys, values];
 }
 
-JSONStr#parse_BinJSONStr[Str:data][ParsingState:state] {
-    return JSONStr [take_Str[data][state]];
+JSONStr#parse_BinJSONStr[Str:data][BinParsingState:state] {
+    return JSONStr [/*span:*/null, take_Str[data][state]];
 }
 
-:JSON#parse_BinJSON_val[Byte:id][Str:data][ParsingState:state] {
+:JSON#parse_BinJSON_val[Byte:id][Str:data][BinParsingState:state] {
     switch (id)
     (1) {
         return parse_BinJSONBool[data][state];
@@ -115,7 +115,7 @@ JSONStr#parse_BinJSONStr[Str:data][ParsingState:state] {
         return parse_BinJSONList[data][state];
     }
     (5) {
-        return JSONNull [];
+        return JSONNull [/*span:*/null];
     }
     (6) {
         return parse_BinJSONObj[data][state];

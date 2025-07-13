@@ -1,4 +1,1 @@
-{
-    "file": "json",
-    "output-type": "package-both"
-}
+{"file": "json", "output-type": "package-both", "packages": ["consolestyles"]}

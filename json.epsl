@@ -1,7 +1,16 @@
 #import binjson;
+#import textjson;
+#import consolestyles;
+
+JSONSpan {
+    L:start,
+    L:end
+}
 
 @super;
-JSON {}
+JSON {
+    JSONSpan?:span
+}
 
 @extends JSON;
 JSONBool {
@@ -39,13 +48,24 @@ JSONStr {
     Str:val
 }
 
+JSONParsingError {
+    L:start_index,
+    L:end_index,
+    Str:message
+}
+
+JSONParsingResult {
+    :JSON?:json,
+    JSONParsingError?:error
+}
+
 :JSON#parse_BinJSON[Str:data] {
     if ([data].len == 0 || data[0] != 'B') {
         abort "Invalid BinJSON start";
     };
 
     [Str]:strs = [Str] [];
-    ParsingState:state = ParsingState [1, strs];
+    BinParsingState:state = BinParsingState [1, strs];
     W:string_count = take_VW_uint[data][state];
     for (W:i to string_count) {
         W:string_len = take_VW_uint[data][state];
@@ -60,6 +80,10 @@ JSONStr {
     };
 
     return result;
+}
+
+JSONParsingResult#parse_txt_JSON[Str:txt] {
+    return parse_txt_JSON_val[TxtParsingState [txt, 0]];
 }
 
 Bool#[:JSON:json].get_bool {
@@ -117,4 +141,102 @@ Bool#[JSONObj:obj].contains_key[Str:target_key] {
 
 Bool#[:JSON:obj].contains_key[Str:target_key] {
     return [[obj].get_obj].contains_key[target_key];
+}
+
+Str#stringify error [JSONParsingError:error] in file [Str:file] with content [Str:txt] {
+    [Str]:lines = [Str] [];
+    Str:line = [""].clone;
+
+    L:exerpt_start_line = 0;
+    L:exerpt_start_col = 0;
+    L:exerpt_end_line = 0;
+    L:exerpt_end_col = 0;
+
+    for (L:i enumerating txt) {
+        Byte:byte = txt[i];
+        if (error.start_index == i) {
+            exerpt_start_line = [lines].len;
+            exerpt_start_col = [line].len;
+        };
+        if (error.end_index == i) {
+            exerpt_end_line = [lines].len;
+            exerpt_end_col = [line].len;
+        };
+        if (byte == '\n') {
+            [lines].append[line];
+            line = [""].clone;
+        } else {
+            [line].append[byte];
+        };
+    };
+    [lines].append[line];
+
+    if (error.start_index >= [txt].len) {
+        exerpt_start_line = [lines].len - 1;
+        exerpt_start_col = 0;
+    };
+    if (error.end_index >= [txt].len) {
+        exerpt_end_line = [lines].len - 1;
+        exerpt_end_col = 0;
+    };
+
+    Str:result = [""].clone;
+    [result].extend[style ["Error at "] with [TXT_RED]];
+    Str:location = "\"{}\", line {}" % file % (exerpt_start_line+1);
+    [result].extend[style [location] with [TXT_CYAN]];
+    [result].extend[style [": "] with [TXT_RED]];
+    [result].extend[error.message];
+    [result].append['\n'];
+
+    if (exerpt_start_line == exerpt_end_line) {
+        Str:line = lines[exerpt_start_line];
+        [result].extend[line];
+        [result].append['\n'];
+
+        L:offset_size = estimate monospace len of
+            [[line].slice[0][exerpt_start_col]];
+        [result].extend[[" "].repeat[offset_size]];
+
+        L:exerpt_size = estimate monospace len of
+            [[line].slice[exerpt_start_col][exerpt_end_col+1]];
+        Str:pointer_txt = "^";
+        if (exerpt_size >= 2) {
+            pointer_txt = "┗{}┛" % ["━"].repeat[exerpt_size - 2];
+        };
+        [result].extend[style [pointer_txt] with [TXT_LIGHT_GREEN]];
+        [result].append['\n'];
+    } else {
+        L:surrounding_lines = 1;
+        L:first_shown_line = 0;
+        if (exerpt_start_line > surrounding_lines) {
+            first_shown_line = exerpt_start_line - surrounding_lines;
+        };
+        L:last_shown_line = exerpt_end_line + surrounding_lines;
+        if (last_shown_line >= [lines].len) {
+            last_shown_line = [lines].len - 1;
+        };
+
+        L:max_line_no_len = [[last_shown_line+1].stringify].len;
+        for (L:line_index from first_shown_line to last_shown_line+1) {
+            Str:line_no_str = [line_index+1].stringify;
+            [line_no_str].left_pad[max_line_no_len][' '];
+            [result].extend[style [line_no_str] with [TXT_LIGHT_BLUE]];
+            [result].append[' '];
+
+            Str:prefix = "  ";
+            if (line_index > exerpt_start_line && line_index < exerpt_end_line) {
+                prefix = "┃ ";
+            } elif (line_index == exerpt_start_line) {
+                prefix = "┏╸";
+            } elif (line_index == exerpt_end_line) {
+                prefix = "┗╸";
+            };
+            [result].extend[style [prefix] with [TXT_LIGHT_GREEN]];
+
+            [result].extend[lines[line_index]];
+            [result].append['\n'];
+        };
+    };
+
+    return result;
 }

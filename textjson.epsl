@@ -1,0 +1,332 @@
+#import json;
+
+TxtParsingState {
+    Str:txt,
+    L:pos
+}
+
+Token {
+    L:start,
+    L:end,
+    Str?:str
+}
+
+Bool#is_numeric_char [Byte:byte] {
+    return byte == '-' || ('0' <= byte && byte <= '9');
+}
+
+Str?#[TxtParsingState:state].next_token_str_with_bytes[[Byte]:chars] {
+    Str:token = [""].clone;
+    while (state.pos < [state.txt].len) {
+        Byte:byte = state.txt[state.pos];
+        if ([chars].index_of[byte] == -1) {
+            break;
+        };
+        state.pos++;
+        [token].append[byte];
+    };
+    return token;
+}
+
+Str?#[TxtParsingState:state].next_token_str {
+    Byte:byte = ' ';
+    while (byte == ' ' || byte == '\n' || byte == '\r' || byte == '\t') {
+        if (state.pos == [state.txt].len) {
+            return null;
+        };
+        byte = state.txt[state.pos++];
+    };
+    if ('a' <= byte && byte <= 'z') {
+        state.pos--;
+        return [state].next_token_str_with_bytes["abcdefghijklmnopqrstuvwxyz"];
+    } elif (is_numeric_char [byte]) {
+        state.pos--;
+        return [state].next_token_str_with_bytes["-+eE0123456789."];
+    } elif (byte == '"') {
+        Str:token = Str [byte];
+        Bool:was_backslash = false;
+        while (state.pos < [state.txt].len) {
+            if (state.pos == [state.txt].len) {
+                return token;
+            };
+            Byte:byte = state.txt[state.pos++];
+            [token].append[byte];
+            if (was_backslash) {
+                was_backslash = false;
+            } else {
+                if (byte == '"') {
+                    break;
+                } elif (byte == '\\') {
+                    was_backslash = true;
+                };
+            };
+        };
+        return token;
+    } else {
+        return Str [byte];
+    };
+}
+
+Token#[TxtParsingState:state].next_token {
+    Str?:str = [state].next_token_str;
+    L:end = state.pos - 1;
+    L:start = 0;
+    L:token_len = [[str] || [""]].len;
+    if (token_len <= end) {
+        start = end + 1 - token_len;
+    };
+    return Token [start, end, str];
+}
+
+JSONParsingError#parse error [Token:token] msg: [Str:msg] {
+    return JSONParsingError [
+        token.start, token.end, msg
+    ];
+}
+
+JSONParsingError#parse error [Token:token] msg: [Str:msg] at: [L:i] {
+    return JSONParsingError [
+        token.start + i, token.start + i, msg
+    ];
+}
+
+JSONParsingResult#error result [Token:token] msg: [Str:msg] {
+    return JSONParsingResult [null, parse error [token] msg: [msg]];
+}
+
+JSONParsingResult#error result [Token:token] msg: [Str:msg] at: [L:i] {
+    return JSONParsingResult [null, parse error [token] msg: [msg] at: [i]];
+}
+
+JSONParsingError#EOF error [Token:token] {
+    return parse error [token] msg: ["Expected token, got EOF"];
+}
+
+JSONParsingResult#EOF error result [Token: token] {
+    return JSONParsingResult [null, EOF error [token]];
+}
+
+JSONParsingResult#success result [:JSON:json] {
+    return JSONParsingResult [json, null];
+}
+
+JSONParsingError?#[Token:token].expect_any[[Str]:options] {
+    given (token.str as Str:str) {
+        for (Str:option in options) {
+            if ([str] equals [option]) {
+                return null;
+            };
+        };
+        return parse error [token]
+            msg: ["Expected {}, got '{}'" % [options].join[" or "] % str];
+    } else {
+        return parse error [token]
+            msg: ["Expected {}, got EOF" % [options].join[" or "]];
+    };
+}
+
+JSONSpan#get span [Token:token] {
+    return JSONSpan [token.start, token.end];
+}
+
+JSONParsingResult#parse_txt_JSON_list[TxtParsingState:state] {
+    // we already have the opening square brace matched
+    JSONSpan:list_span = JSONSpan [state.pos-1, 0];
+    JSONList:list = JSONList [list_span, [:JSON] []];
+
+    while (true) {
+        JSONParsingResult:val_result = parse_txt_JSON_val[state];
+        if (val_result.error) {
+            return val_result;
+        };
+        :JSON:val_json = [val_result.json].unwrap;
+
+        [list.items].append[val_json];
+
+        Token:end_token = [state].next_token;
+        given ([end_token].expect_any[[Str] [",", "]"]] as JSONParsingError:error) {
+            return JSONParsingResult [null, error];
+        };
+        if ([end_token.str] equals [(Str?)"]"]) {
+            list_span.end = end_token.end;
+            return success result [list];
+        };
+    };
+}
+
+JSONParsingResult#parse_txt_JSON_obj[TxtParsingState:state] {
+    // we already have the opening curly brace matched
+    JSONSpan:obj_span = JSONSpan [state.pos-1, 0];
+    JSONObj:obj = JSONObj [obj_span, [Str] [], [:JSON] []];
+
+    while (true) {
+        Token:key_token = [state].next_token;
+        JSONParsingResult:key_result = parse_JSON_txt_str[key_token];
+        if (key_result.error) {
+            return key_result;
+        };
+        Str:key_str = [(JSONStr?)[key_result.json].unwrap].unwrap.val;
+        
+        given ([[state].next_token].expect_any[[Str] [":"]] as JSONParsingError:error) {
+            return JSONParsingResult [null, error];
+        };
+        
+        JSONParsingResult:val_result = parse_txt_JSON_val[state];
+        if (val_result.error) {
+            return val_result;
+        };
+        :JSON:val_json = [val_result.json].unwrap;
+        
+        [obj.keys].append[key_str];
+        [obj.values].append[val_json];
+        
+        Token:end_token = [state].next_token;
+        given ([end_token].expect_any[[Str] [",", "}"]] as JSONParsingError:error) {
+            return JSONParsingResult [null, error];
+        };
+        if ([end_token.str] equals [(Str?)"}"]) {
+            obj_span.end = end_token.end;
+            return success result [obj];
+        };
+    };
+}
+
+JSONParsingResult#parse_JSON_txt_str [Token:token] {
+    given (token.str as Str:str) {
+        if ([str].len == 0 || str[0] != '"') {
+            return error result [token]
+                msg: ["Strings must start with '\"'"];
+        };
+        Str:parsed = [""].clone;
+        L:i = 1;
+        while (i < [str].len) {
+            Byte:byte = str[i];
+            if (byte == '"') {
+                return success result [JSONStr [get span [token], parsed]];
+            } elif (byte == '\\') {
+                i++;
+                if (i >= [str].len) {
+                    return error result [token]
+                        msg: ["Expected character after '\\'"];
+                };
+                Byte:next = str[i];
+                switch next
+                ('"') {[parsed].append[next];}
+                ('\\') {[parsed].append[next];}
+                ('/') {[parsed].append[next];}
+                ('b') {[parsed].append['\b'];}
+                ('f') {[parsed].append['\f'];}
+                ('n') {[parsed].append['\n'];}
+                ('r') {[parsed].append['\r'];}
+                ('t') {[parsed].append['\t'];}
+                ('u') {
+                    return error result [token]
+                        msg: ["'\\u' escape codes are not yet supported"];
+                }
+                {
+                    return error result [token]
+                        msg: ["Invalid escape character"]
+                        at: [i];
+                };
+            } else {
+                [parsed].append[byte];
+            };
+            i++;
+        };
+        return error result [token] msg: ["Unterminated string literal"];
+    } else {
+        return EOF error result [token];
+    };
+}
+
+JSONParsingResult#parse_JSON_txt_number[Token:token] {
+    given (token.str as Str:str) {
+        Bool:negate = false;
+        Z:whole_part = 0;
+        Q:fraction_part = 0;
+        Q:fraction_place_value = 0.1;
+        Bool:negate_exponent = false;
+        Z:exponent_value = 0;
+
+        Bool:is_whole_part = true;
+        Bool:is_fraction_part = false;
+        Bool:is_exponent_first_char = false;
+        Bool:is_exponent_part = false;
+
+        for (L:i enumerating str) {
+            Byte:byte = str[i];
+            if (i == 0 && byte == '-') {
+                negate = true;
+            } elif (is_whole_part && (byte >= '0' && byte <= '9')) {
+                whole_part *= 10;
+                whole_part += byte - '0';
+            } elif (is_whole_part && byte == '.') {
+                is_whole_part = false;
+                is_fraction_part = true;
+            } elif (is_fraction_part && (byte >= '0' && byte <= '9')) {
+                fraction_part += (byte - '0') * fraction_place_value;
+                fraction_place_value *= 0.1;
+            } elif ((is_whole_part || is_fraction_part) && (byte == 'e' || byte == 'E')) {
+                is_whole_part = false;
+                is_fraction_part = false;
+                is_exponent_part = true;
+                is_exponent_first_char = true;
+            } elif (is_exponent_first_char && (byte == '+' || byte == '-')) {
+                is_exponent_first_char = false;
+                negate_exponent = byte == '-';
+            } elif (is_exponent_part && (byte >= '0' && byte <= '9')) {
+                is_exponent_first_char = false;
+                exponent_value *= 10;
+                exponent_value += byte - '0';
+            } else {
+                return error result [token]
+                    msg: ["Unexpected character in numeric literal"]
+                    at: [i];
+            };
+        };
+
+        if (is_exponent_part || is_fraction_part) {
+            if (negate_exponent) {
+                exponent_value *= -1;
+            };
+            Q:val = (whole_part + fraction_part) * (10 ** exponent_value);
+            return success result [JSONDouble [get span [token], val]];
+        } else {
+            return success result [JSONInt [get span [token], whole_part]];
+        };
+    } else {
+        return EOF error result [token];
+    };
+}
+
+JSONParsingResult#parse_txt_JSON_val[TxtParsingState:state] {
+    Token:token = [state].next_token;
+    given (token.str as Str:str) {
+        if (str[0] == '"') {
+            return parse_JSON_txt_str [token];
+        } elif (is_numeric_char [str[0]]) {
+            return parse_JSON_txt_number[token];
+        } elif ([str] equals ["["]) {
+            return parse_txt_JSON_list[state];
+        } elif ([str] equals ["{"]) {
+            return parse_txt_JSON_obj[state];
+        } elif ([str] equals ["true"]) {
+            return success result [JSONBool [get span [token], true]];
+        } elif ([str] equals ["false"]) {
+            return success result [JSONBool [get span [token], false]];
+        } elif ([str] equals ["null"]) {
+            return success result [JSONNull [get span [token]]];
+        } else {
+            return error result [token] msg: ["Unexpected token, expected JSON value"];
+        };
+    } else {
+        return EOF error result [token];
+    };
+}
+
+L#estimate monospace len of [Str:str] {
+    // length in bytes is a very bad proxy
+    // at some point this should be changed to at least measure
+    // codepoint count
+    return [str].len;
+}
