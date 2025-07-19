@@ -325,8 +325,20 @@ JSONParsingResult#parse_txt_JSON_val[TxtParsingState:state] {
 }
 
 L#estimate monospace len of [Str:str] {
-    // length in bytes is a very bad proxy
-    // at some point this should be changed to at least measure
-    // codepoint count
-    return [str].len;
+    L:length = 0;
+    for (Byte:byte in str) {
+        if (byte == '\t') {
+            // hardcode tab size
+            length += 8;
+        } elif (byte < 128) {
+            // standard ascii char
+            length++;
+        } elif ([byte] & [64]) {
+            // first byte of unicode code point
+            // not guaranteed to be an individual char
+            // but possibly a decent proxy
+            length++;
+        };
+    };
+    return length;
 }
