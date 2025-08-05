@@ -19,7 +19,7 @@ Str?#[TxtParsingState:state].next_token_str_with_bytes[[Byte]:chars] {
     Str:token = [""].clone;
     while (state.pos < [state.txt].len) {
         Byte:byte = state.txt[state.pos];
-        if ([chars].index_of[byte] == -1) {
+        if ([[chars].index_of[byte]].is_null) {
             break;
         };
         state.pos++;
