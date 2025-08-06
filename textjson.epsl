@@ -324,6 +324,26 @@ JSONParsingResult#parse_txt_JSON_val[TxtParsingState:state] {
     };
 }
 
+Str#string_to_txt_JSON[Str:str] {
+    Str:result = Str ['"'];
+    for (Byte:byte in str) {
+        if (byte == '"') {
+            [result].extend["\\\""];
+        } elif (byte == '\\') {
+            [result].extend["\\\\"];
+        } elif (byte == 127 || byte < 32) {
+            [result].extend["\\u00"];
+            Str:hex_nibbles = "0123456789ABCDEF";
+            [result].append[hex_nibbles[byte ~/ 16]];
+            [result].append[hex_nibbles[byte % 16]];
+        } else {
+            [result].append[byte];
+        };
+    };
+    [result].append['"'];
+    return result;
+}
+
 L#estimate monospace len of [Str:str] {
     L:length = 0;
     for (Byte:byte in str) {

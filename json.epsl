@@ -86,6 +86,44 @@ JSONParsingResult#parse_txt_JSON[Str:txt] {
     return parse_txt_JSON_val[TxtParsingState [txt, 0]];
 }
 
+Str#[:JSON:json].stringify {
+    given (json as JSONBool:bool) {
+        return [bool.val].stringify;
+    } given (json as JSONDouble:double) {
+        return [double.val].stringify;
+    } given (json as JSONInt:int) {
+        return [int.val].stringify;
+    } given (json as JSONList:list) {
+        Str:result = Str ['['];
+        for (L:i enumerating list.items) {
+            if (i != 0) {
+                [result].extend[", "];
+            };
+            [result].extend[[list.items[i]].stringify];
+        };
+        [result].append[']'];
+        return result;
+    } given (json as JSONNull:null_) {
+        return "null";
+    } given (json as JSONObj:obj) {
+        Str:result = Str ['{'];
+        for (L:i enumerating obj.keys) {
+            if (i != 0) {
+                [result].extend[", "];
+            };
+            [result].extend[string_to_txt_JSON[obj.keys[i]]];
+            [result].extend[": "];
+            [result].extend[[obj.values[i]].stringify];
+        };
+        [result].append['}'];
+        return result;
+    } given (json as JSONStr:str) {
+        return string_to_txt_JSON[str.val];
+    } else {
+        abort "Invalid JSON";
+    };
+}
+
 Bool#[:JSON:json].get_bool {
     return [(JSONBool?)json].unwrap.val;
 }
