@@ -1,6 +1,6 @@
-#import json;
-#import utf16;
-#import conversion;
+$import json;
+$import utf16;
+$import conversion;
 
 TxtParsingState {
     Str:txt,

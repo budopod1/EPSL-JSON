@@ -1,5 +1,5 @@
-#import json;
-#import conversion;
+$import json;
+$import conversion;
 
 BinParsingState {
     W:i,

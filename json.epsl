@@ -1,6 +1,6 @@
-#import binjson;
-#import textjson;
-#import consolestyles;
+$import binjson;
+$import textjson;
+$import consolestyles;
 
 JSONSpan {
     L:start,
