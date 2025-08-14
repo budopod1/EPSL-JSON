@@ -130,3 +130,106 @@ JSONStr#parse_BinJSONStr[Str:data][BinParsingState:state] {
         abort "Invalid BinJSON ID";
     };
 }
+
+#write_VW_uint[W:val] to: [Str:target] {
+    while (true) {
+        Byte:b = (Byte)([127] & [val]);
+        val = [val] >> [7];
+        if (val) {
+            b += (Byte)128;
+        };
+        [target].append[b];
+        if (!val) {
+            break;
+        };
+    };
+}
+
+Bool#[JSONList:list].has_homogeneous_ids {
+    if ([list.items].len <= 1) {
+        return true;
+    };
+    W:first_id = get_BinJSON_id[list.items[0]];
+    for (:JSON:item in list.items from 1) {
+        if (get_BinJSON_id[item] != first_id) {
+            return false;
+        };
+    };
+    return true;
+}
+
+Byte#get_BinJSON_id[:JSON:json] {
+    given (json as JSONBool:bool) {
+        return '\x01';
+    } given (json as JSONDouble:double) {
+        return '\x02';
+    } given (json as JSONInt:int) {
+        return '\x03';
+    } given (json as JSONList:list) {
+        if ([list].has_homogeneous_ids) {
+            return '\x04';
+        } else {
+            return '\x08';
+        };
+    } given (json as JSONNull:null_) {
+        return '\x05';
+    } given (json as JSONObj:obj) {
+        return '\x06';
+    } given (json as JSONStr:str) {
+        return '\x07';
+    } else {
+        abort "Invalid JSON";
+    };
+}
+
+#write_BinJSON_str[Str:str] to: [Str:target] str_table: [[Str]:str_table] {
+    for (L:i enumerating str_table) {
+        if ([str] equals [str_table[i]]) {
+            write_VW_uint[i] to: [target];
+            return;
+        };
+    };
+    write_VW_uint[[str_table].len] to: [target];
+    [str_table].append[str];
+}
+
+#write_BinJSON[:JSON:json] to: [Str:target] str_table: [[Str]:str_table] {
+    given (json as JSONBool:bool) {
+        [target].append[(Byte)bool.val];
+    } given (json as JSONDouble:double) {
+        [target].extend[[double.val].pack];
+    } given (json as JSONInt:int) {
+        write_VW_uint[(W)int.val] to: [target];
+    } given (json as JSONList:list) {
+        if ([list.items].len == 0) {
+            [target].append['\0'];
+            return;
+        };
+        write_VW_uint[[list.items].len] to: [target];
+        if ([list].has_homogeneous_ids) {
+            [target].append[get_BinJSON_id[list.items[0]]];
+            for (:JSON:item in list.items) {
+                write_BinJSON[item] to: [target] str_table: [str_table];
+            };
+        } else {
+            for (:JSON:item in list.items) {
+                [target].append[get_BinJSON_id[item]];
+                write_BinJSON[item] to: [target] str_table: [str_table];
+            };
+        };
+    } given (json as JSONNull:null_) {
+        // this intentionally does nothing
+    } given (json as JSONObj:obj) {
+        write_VW_uint[[obj.keys].len] to: [target];
+        for (L:i enumerating obj.keys) {
+            write_BinJSON_str[obj.keys[i]] to: [target] str_table: [str_table];
+            :JSON:value = obj.values[i];
+            [target].append[get_BinJSON_id[value]];
+            write_BinJSON[value] to: [target] str_table: [str_table];
+        };
+    } given (json as JSONStr:str) {
+        write_BinJSON_str[str.val] to: [target] str_table: [str_table];
+    } else {
+        abort "Invalid JSON";
+    };
+}

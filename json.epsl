@@ -82,6 +82,21 @@ JSONParsingResult {
     return result;
 }
 
+Str#serialize_BinJSON[:JSON:json] {
+    [Str]:str_table = [Str] [];
+    Str:result_body = Str [];
+    write_BinJSON[json] to: [result_body] str_table: [str_table];
+    Str:result = Str ['B'];
+    write_VW_uint[[str_table].len] to: [result];
+    for (Str:str in str_table) {
+        write_VW_uint[[str].len] to: [result];
+        [result].extend[str];
+    };
+    [result].append[get_BinJSON_id[json]];
+    [result].extend[result_body];
+    return result;
+}
+
 JSONParsingResult#parse_txt_JSON[Str:txt] {
     return parse_txt_JSON_val[TxtParsingState [txt, 0]];
 }
