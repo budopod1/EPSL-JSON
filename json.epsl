@@ -48,6 +48,43 @@ JSONStr {
     Str:val
 }
 
+@super;
+JSONShape {}
+
+@extends JSONShape;
+JSONBoolShape {}
+
+@extends JSONShape;
+JSONDoubleShape {}
+
+@extends JSONShape;
+JSONIntShape {}
+
+@extends JSONShape;
+JSONListShape {
+    :JSONShape:item
+}
+
+@extends JSONShape;
+JSONNullableShape {
+    :JSONShape:sub
+}
+
+@extends JSONShape;
+JSONAllKeysShape {
+    [Str]:keys,
+    [:JSONShape]:value_shapes
+}
+
+@extends JSONShape;
+JSONAnyKeysShape {
+    [Str]:keys,
+    [:JSONShape]:value_shapes
+}
+
+@extends JSONShape;
+JSONStrShape {}
+
 JSONParsingError {
     L:start_index,
     L:end_index,
@@ -137,6 +174,114 @@ Str#[:JSON:json].stringify {
     } else {
         abort "Invalid JSON";
     };
+}
+
+JSONParsingError#json error [Str:msg] at [:JSON:json] {
+    given (json.span as JSONSpan:span) {
+        return JSONParsingError [span.start, span.end, msg];
+    } else {
+        return JSONParsingError [0, 0, msg];
+    };
+}
+
+JSONParsingError?#check [:JSON:json] against [:JSONShape:shape] {
+    given (shape as JSONBoolShape:bool) {
+        if ((JSONBool?)json) {
+            return null;
+        } else {
+            return json error ["Expected bool"] at [json];
+        };
+    } given (shape as JSONDoubleShape:double) {
+        if ((JSONDouble?)json) {
+            return null;
+        } else {
+            return json error ["Expected double"] at [json];
+        };
+    } given (shape as JSONIntShape:int_shape) {
+        if ((JSONInt?)json) {
+            return null;
+        } else {
+            return json error ["Expected int"] at [json];
+        };
+    } given (shape as JSONListShape:list_shape) {
+        given (json as JSONList:list) {
+            for (:JSON:item in list.items) {
+                given (check [item] against [list_shape.item] as JSONParsingError:error) {
+                    return error;
+                };
+            };
+            return null;
+        } else {
+            return json error ["Expected list"] at [json];
+        };
+    } given (shape as JSONNullableShape:nullable_shape) {
+        given (json as JSONNull:null_) {
+            return null;
+        } else {
+            return check [json] against [nullable_shape.sub];
+        };
+    } given (shape as JSONAllKeysShape:all_keys_shape) {
+        given (json as JSONObj:obj) {
+            return check [obj] against [all_keys_shape];
+        } else {
+            return json error ["Expected object"] at [json];
+        };
+    } given (shape as JSONAnyKeysShape:any_keys_shape) {
+        given (json as JSONObj:obj) {
+            return check [obj] against [any_keys_shape];
+        } else {
+            return json error ["Expected object"] at [json];
+        };
+    } given (shape as JSONStrShape:str_shape) {
+        if ((JSONStr?)json) {
+            return null;
+        } else {
+            return json error ["Expected string"] at [json];
+        };
+    } else {
+        abort "Invalid JSON Shape";
+    };
+}
+
+JSONParsingError?#check [JSONObj:obj] against [JSONAllKeysShape:shape] {
+    for (L:i enumerating shape.keys) {
+        Str:key = shape.keys[i];
+        Bool:found = false;
+        for (L:j enumerating obj.keys) {
+            if ([key] not equals [obj.keys[j]]) {
+                continue;
+            };
+            found = true;
+            JSONParsingError?:maybe_error = check [obj.values[j]]
+                against [shape.value_shapes[i]];
+            given (maybe_error as JSONParsingError:error) {
+                return error;
+            };
+            break;
+        };
+        if (!found) {
+            return json error ["Expected key '{}' not found" % key] at [obj];
+        };
+    };
+    return null;
+}
+
+JSONParsingError?#check [JSONObj:obj] against [JSONAnyKeysShape:shape] {
+    for (L:i enumerating shape.keys) {
+        Str:key = shape.keys[i];
+        for (L:j enumerating obj.keys) {
+            if ([key] not equals [obj.keys[j]]) {
+                continue;
+            };
+            JSONParsingError?:maybe_error = check [obj.values[j]]
+                against [shape.value_shapes[i]];
+            given (maybe_error as JSONParsingError:error) {
+                return error;
+            };
+            break;
+        };
+    };
+    return null;
 }
 
 Bool#[:JSON:json].get_bool {

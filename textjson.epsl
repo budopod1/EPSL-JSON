@@ -136,6 +136,14 @@ JSONParsingResult#parse_txt_JSON_list[TxtParsingState:state] {
     JSONSpan:list_span = JSONSpan [state.pos-1, 0];
     JSONList:list = JSONList [list_span, [:JSON] []];
 
+    L:start_pos = state.pos;
+    Token:start_token = [state].next_token;
+    if ([start_token.str] equals [(Str?)"]"]) {
+        list_span.end = start_token.end;
+        return success result [list];
+    };
+    state.pos = start_pos;
+
     while (true) {
         JSONParsingResult:val_result = parse_txt_JSON_val[state];
         if (val_result.error) {
@@ -160,6 +168,14 @@ JSONParsingResult#parse_txt_JSON_obj[TxtParsingState:state] {
     // we already have the opening curly brace matched
     JSONSpan:obj_span = JSONSpan [state.pos-1, 0];
     JSONObj:obj = JSONObj [obj_span, [Str] [], [:JSON] []];
+
+    L:start_pos = state.pos;
+    Token:start_token = [state].next_token;
+    if ([start_token.str] equals [(Str?)"}"]) {
+        obj_span.end = start_token.end;
+        return success result [obj];
+    };
+    state.pos = start_pos;
 
     while (true) {
         Token:key_token = [state].next_token;
