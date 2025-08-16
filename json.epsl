@@ -83,6 +83,11 @@ JSONAnyKeysShape {
 }
 
 @extends JSONShape;
+JSONStrOptionsShape {
+    [Str]:options
+}
+
+@extends JSONShape;
 JSONStrShape {}
 
 JSONParsingError {
@@ -232,6 +237,19 @@ JSONParsingError?#check [:JSON:json] against [:JSONShape:shape] {
         } else {
             return json error ["Expected object"] at [json];
         };
+    } given (shape as JSONStrOptionsShape:str_options_shape) {
+        given (json as JSONStr:str) {
+            for (Str:option in str_options_shape.options) {
+                if ([str.val] equals [option]) {
+                    return null;
+                };
+            };
+            return json error [
+                "Expected one of: {}" % [str_options_shape.options].join[", "]
+            ] at [json];
+        } else {
+            return json error ["Expected string"] at [json];
+        };
     } given (shape as JSONStrShape:str_shape) {
         if ((JSONStr?)json) {
             return null;
@@ -267,18 +285,23 @@ JSONParsingError?#check [JSONObj:obj] against [JSONAllKeysShape:shape] {
 }
 
 JSONParsingError?#check [JSONObj:obj] against [JSONAnyKeysShape:shape] {
-    for (L:i enumerating shape.keys) {
-        Str:key = shape.keys[i];
-        for (L:j enumerating obj.keys) {
-            if ([key] not equals [obj.keys[j]]) {
+    for (L:i enumerating obj.keys) {
+        Str:key = obj.keys[i];
+        Bool:found = false;
+        for (L:j enumerating shape.keys) {
+            if ([key] not equals [shape.keys[j]]) {
                 continue;
             };
-            JSONParsingError?:maybe_error = check [obj.values[j]]
-                against [shape.value_shapes[i]];
+            found = true;
+            JSONParsingError?:maybe_error = check [obj.values[i]]
+                against [shape.value_shapes[j]];
             given (maybe_error as JSONParsingError:error) {
                 return error;
             };
             break;
+        };
+        if (!found) {
+            return json error ["Key '{}' not allowed" % key] at [obj];
         };
     };
     return null;
