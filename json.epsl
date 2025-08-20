@@ -118,7 +118,7 @@ JSONParsingResult {
     :JSON:result = parse_BinJSON_val[initial_id][data][state];
 
     if ([data].len != state.i) {
-        abort "Invalid BinJSON: parsing finished; more data avaliable";
+        abort "Invalid BinJSON: parsing finished; more data available";
     };
 
     return result;
