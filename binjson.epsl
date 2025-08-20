@@ -51,7 +51,7 @@ JSONBool#parse_BinJSONBool[Str:data][BinParsingState:state] {
 }
 
 JSONDouble#parse_BinJSONDouble[Str:data][BinParsingState:state] {
-    Q:val = unpack_Q64[data][state.i];
+    R:val = unpack_R64[data][state.i];
     state.i += 8;
     return JSONDouble [/*span:*/null, val];
 }

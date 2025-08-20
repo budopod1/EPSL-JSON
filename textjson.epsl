@@ -294,8 +294,8 @@ JSONParsingResult#parse_JSON_txt_number[Token:token] {
     given (token.str as Str:str) {
         Bool:negate = false;
         Z:whole_part = 0;
-        Q:fraction_part = 0;
-        Q:fraction_place_value = 0.1;
+        R:fraction_part = 0;
+        R:fraction_place_value = 0.1;
         Bool:negate_exponent = false;
         Z:exponent_value = 0;
 
@@ -340,7 +340,7 @@ JSONParsingResult#parse_JSON_txt_number[Token:token] {
             if (negate_exponent) {
                 exponent_value *= -1;
             };
-            Q:val = (whole_part + fraction_part) * (10 ** exponent_value);
+            R:val = (whole_part + fraction_part) * (10 ** exponent_value);
             return success result [JSONDouble [get span [token], val]];
         } else {
             return success result [JSONInt [get span [token], whole_part]];

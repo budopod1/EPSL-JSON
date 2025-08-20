@@ -19,7 +19,7 @@ JSONBool {
 
 @extends JSON;
 JSONDouble {
-    Q:val
+    R:val
 }
 
 @extends JSON;
@@ -311,7 +311,7 @@ Bool#[:JSON:json].get_bool {
     return [(JSONBool?)json].unwrap.val;
 }
 
-Q#[:JSON:json].get_double {
+R#[:JSON:json].get_double {
     return [(JSONDouble?)json].unwrap.val;
 }
 
