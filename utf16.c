@@ -44,7 +44,7 @@ NULLABLE_ARRAY_Byte *json_utf16_to_utf_8(struct ARRAY_W16 *utf16) {
     );
     if (utf8_size == 0) return NULL;
     
-    char *utf8_buffer = malloc(utf8_size);
+    char *utf8_buffer = epsl_malloc(utf8_size);
     int status = WideCharToMultiByte(
         CP_UTF8, // dest encoding
         MB_ERR_INVALID_CHARS, // flags
@@ -72,7 +72,7 @@ NULLABLE_ARRAY_Byte *json_utf16_to_utf_8(struct ARRAY_W16 *utf16) {
 
     // each UTF-16 pair may result in up to 3 bytes in UTF-8
     size_t utf8_size = utf16->length * 3;
-    char *utf8_buffer = malloc(utf8_size);
+    char *utf8_buffer = epsl_malloc(utf8_size);
 
     char *utf16_content = (char*)utf16->content;
     size_t utf16_byte_len = utf16->length * 2;
@@ -91,7 +91,7 @@ NULLABLE_ARRAY_Byte *json_utf16_to_utf_8(struct ARRAY_W16 *utf16) {
     uint64_t utf8_len = utf8_size - utf8_bytes_remaining;
 #endif
 
-    struct ARRAY_Byte *result = malloc(sizeof(*result));
+    struct ARRAY_Byte *result = epsl_malloc(sizeof(*result));
     result->ref_counter = 0;
     result->capacity = utf8_size;
     result->length = utf8_len;
