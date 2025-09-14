@@ -1,6 +1,6 @@
-$import binjson;
-$import textjson;
-$import consolestyles;
+%import binjson;
+%import textjson;
+%import consolestyles;
 
 JSONSpan {
     L:start,
@@ -29,7 +29,7 @@ JSONInt {
 
 @extends JSON;
 JSONList {
-    [%JSON]:items
+    [$JSON]:items
 }
 
 @extends JSON;
@@ -40,7 +40,7 @@ JSONNull {
 @extends JSON;
 JSONObj {
     [Str]:keys,
-    [%JSON]:values
+    [$JSON]:values
 }
 
 @extends JSON;
@@ -62,24 +62,24 @@ JSONIntShape {}
 
 @extends JSONShape;
 JSONListShape {
-    %JSONShape:item
+    $JSONShape:item
 }
 
 @extends JSONShape;
 JSONNullableShape {
-    %JSONShape:sub
+    $JSONShape:sub
 }
 
 @extends JSONShape;
 JSONAllKeysShape {
     [Str]:keys,
-    [%JSONShape]:value_shapes
+    [$JSONShape]:value_shapes
 }
 
 @extends JSONShape;
 JSONAnyKeysShape {
     [Str]:keys,
-    [%JSONShape]:value_shapes
+    [$JSONShape]:value_shapes
 }
 
 @extends JSONShape;
@@ -97,11 +97,11 @@ JSONParsingError {
 }
 
 JSONParsingResult {
-    %JSON?:json,
+    $JSON?:json,
     JSONParsingError?:error
 }
 
-%JSON#parse_BinJSON[Str:data] {
+$JSON#parse_BinJSON[Str:data] {
     if ([data].len == 0 || data[0] != 'B') {
         abort "Invalid BinJSON start";
     };
@@ -115,7 +115,7 @@ JSONParsingResult {
     };
 
     Byte:initial_id = take_byte[data][state];
-    %JSON:result = parse_BinJSON_val[initial_id][data][state];
+    $JSON:result = parse_BinJSON_val[initial_id][data][state];
 
     if ([data].len != state.i) {
         abort "Invalid BinJSON: parsing finished; more data available";
@@ -124,7 +124,7 @@ JSONParsingResult {
     return result;
 }
 
-Str#serialize_BinJSON[%JSON:json] {
+Str#serialize_BinJSON[$JSON:json] {
     [Str]:str_table = [Str] [];
     Str:result_body = Str [];
     write_BinJSON[json] to: [result_body] str_table: [str_table];
@@ -143,7 +143,7 @@ JSONParsingResult#parse_txt_JSON[Str:txt] {
     return parse_txt_JSON_val[TxtParsingState [txt, 0]];
 }
 
-Str#[%JSON:json].stringify {
+Str#[$JSON:json].stringify {
     given (json as JSONBool:bool) {
         return [bool.val].stringify;
     } given (json as JSONDouble:double) {
@@ -181,7 +181,7 @@ Str#[%JSON:json].stringify {
     };
 }
 
-JSONParsingError#json error [Str:msg] at [%JSON:json] {
+JSONParsingError#json error [Str:msg] at [$JSON:json] {
     given (json.span as JSONSpan:span) {
         return JSONParsingError [span.start, span.end, msg];
     } else {
@@ -189,7 +189,7 @@ JSONParsingError#json error [Str:msg] at [%JSON:json] {
     };
 }
 
-JSONParsingError?#check [%JSON:json] against [%JSONShape:shape] {
+JSONParsingError?#check [$JSON:json] against [$JSONShape:shape] {
     given (shape as JSONBoolShape:bool) {
         if ((JSONBool?)json) {
             return null;
@@ -210,7 +210,7 @@ JSONParsingError?#check [%JSON:json] against [%JSONShape:shape] {
         };
     } given (shape as JSONListShape:list_shape) {
         given (json as JSONList:list) {
-            for (%JSON:item in list.items) {
+            for ($JSON:item in list.items) {
                 given (check [item] against [list_shape.item] as JSONParsingError:error) {
                     return error;
                 };
@@ -307,35 +307,35 @@ JSONParsingError?#check [JSONObj:obj] against [JSONAnyKeysShape:shape] {
     return null;
 }
 
-Bool#[%JSON:json].get_bool {
+Bool#[$JSON:json].get_bool {
     return [(JSONBool?)json].unwrap.val;
 }
 
-R#[%JSON:json].get_double {
+R#[$JSON:json].get_double {
     return [(JSONDouble?)json].unwrap.val;
 }
 
-Z#[%JSON:json].get_int {
+Z#[$JSON:json].get_int {
     return [(JSONInt?)json].unwrap.val;
 }
 
-[%JSON]#[%JSON:json].get_list {
+[$JSON]#[$JSON:json].get_list {
     return [(JSONList?)json].unwrap.items;
 }
 
-Bool#[%JSON:json].is_null {
+Bool#[$JSON:json].is_null {
     return ![(JSONNull?)json].is_null;
 }
 
-JSONObj#[%JSON:json].get_obj {
+JSONObj#[$JSON:json].get_obj {
     return [(JSONObj?)json].unwrap;
 }
 
-Str#[%JSON:json].get_str {
+Str#[$JSON:json].get_str {
     return [(JSONStr?)json].unwrap.val;
 }
 
-%JSON#[JSONObj:obj].get[Str:key] {
+$JSON#[JSONObj:obj].get[Str:key] {
     if ([obj.keys].len != [obj.values].len) {
         abort "JSONObj number of keys and values must match";
     };
@@ -356,11 +356,11 @@ Bool#[JSONObj:obj].contains_key[Str:target_key] {
     return false;
 }
 
-%JSON#[%JSON:obj].get[Str:key] {
+$JSON#[$JSON:obj].get[Str:key] {
     return [[obj].get_obj].get[key];
 }
 
-Bool#[%JSON:obj].contains_key[Str:target_key] {
+Bool#[$JSON:obj].contains_key[Str:target_key] {
     return [[obj].get_obj].contains_key[target_key];
 }
 
