@@ -62,7 +62,7 @@ JSONInt#parse_BinJSONInt[Str:data][BinParsingState:state] {
 
 JSONList#parse_BinJSONList[Str:data][BinParsingState:state] {
     W:len = take_VW_uint[data][state];
-    [:JSON]:items = [:JSON] [];
+    [%JSON]:items = [%JSON] [];
     if (len > 0) {
         Byte:sub_id = take_byte[data][state];
         for (W:i to len) {
@@ -74,7 +74,7 @@ JSONList#parse_BinJSONList[Str:data][BinParsingState:state] {
 
 JSONList#parse_BinJSONList_multityped[Str:data][BinParsingState:state] {
     W:len = take_VW_uint[data][state];
-    [:JSON]:items = [:JSON] [];
+    [%JSON]:items = [%JSON] [];
     if (len > 0) {
         for (W:i to len) {
             Byte:sub_id = take_byte[data][state];
@@ -87,7 +87,7 @@ JSONList#parse_BinJSONList_multityped[Str:data][BinParsingState:state] {
 JSONObj#parse_BinJSONObj[Str:data][BinParsingState:state] {
     W:len = take_VW_uint[data][state];
     [Str]:keys = [Str] [];
-    [:JSON]:values = [:JSON] [];
+    [%JSON]:values = [%JSON] [];
     for (W:i to len) {
         [keys].append[take_Str[data][state]];
         Byte:val_id = take_byte[data][state];
@@ -100,7 +100,7 @@ JSONStr#parse_BinJSONStr[Str:data][BinParsingState:state] {
     return JSONStr [/*span:*/null, take_Str[data][state]];
 }
 
-:JSON#parse_BinJSON_val[Byte:id][Str:data][BinParsingState:state] {
+%JSON#parse_BinJSON_val[Byte:id][Str:data][BinParsingState:state] {
     switch (id)
     (1) {
         return parse_BinJSONBool[data][state];
@@ -150,7 +150,7 @@ Bool#[JSONList:list].has_homogeneous_ids {
         return true;
     };
     W:first_id = get_BinJSON_id[list.items[0]];
-    for (:JSON:item in list.items from 1) {
+    for (%JSON:item in list.items from 1) {
         if (get_BinJSON_id[item] != first_id) {
             return false;
         };
@@ -158,7 +158,7 @@ Bool#[JSONList:list].has_homogeneous_ids {
     return true;
 }
 
-Byte#get_BinJSON_id[:JSON:json] {
+Byte#get_BinJSON_id[%JSON:json] {
     given (json as JSONBool:bool) {
         return '\x01';
     } given (json as JSONDouble:double) {
@@ -193,7 +193,7 @@ Byte#get_BinJSON_id[:JSON:json] {
     [str_table].append[str];
 }
 
-#write_BinJSON[:JSON:json] to: [Str:target] str_table: [[Str]:str_table] {
+#write_BinJSON[%JSON:json] to: [Str:target] str_table: [[Str]:str_table] {
     given (json as JSONBool:bool) {
         [target].append[(Byte)bool.val];
     } given (json as JSONDouble:double) {
@@ -208,11 +208,11 @@ Byte#get_BinJSON_id[:JSON:json] {
         write_VW_uint[[list.items].len] to: [target];
         if ([list].has_homogeneous_ids) {
             [target].append[get_BinJSON_id[list.items[0]]];
-            for (:JSON:item in list.items) {
+            for (%JSON:item in list.items) {
                 write_BinJSON[item] to: [target] str_table: [str_table];
             };
         } else {
-            for (:JSON:item in list.items) {
+            for (%JSON:item in list.items) {
                 [target].append[get_BinJSON_id[item]];
                 write_BinJSON[item] to: [target] str_table: [str_table];
             };
@@ -223,7 +223,7 @@ Byte#get_BinJSON_id[:JSON:json] {
         write_VW_uint[[obj.keys].len] to: [target];
         for (L:i enumerating obj.keys) {
             write_BinJSON_str[obj.keys[i]] to: [target] str_table: [str_table];
-            :JSON:value = obj.values[i];
+            %JSON:value = obj.values[i];
             [target].append[get_BinJSON_id[value]];
             write_BinJSON[value] to: [target] str_table: [str_table];
         };

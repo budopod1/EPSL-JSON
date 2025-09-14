@@ -108,7 +108,7 @@ JSONParsingResult#EOF error result [Token: token] {
     return JSONParsingResult [null, EOF error [token]];
 }
 
-JSONParsingResult#success result [:JSON:json] {
+JSONParsingResult#success result [%JSON:json] {
     return JSONParsingResult [json, null];
 }
 
@@ -134,7 +134,7 @@ JSONSpan#get span [Token:token] {
 JSONParsingResult#parse_txt_JSON_list[TxtParsingState:state] {
     // we already have the opening square brace matched
     JSONSpan:list_span = JSONSpan [state.pos-1, 0];
-    JSONList:list = JSONList [list_span, [:JSON] []];
+    JSONList:list = JSONList [list_span, [%JSON] []];
 
     L:start_pos = state.pos;
     Token:start_token = [state].next_token;
@@ -149,7 +149,7 @@ JSONParsingResult#parse_txt_JSON_list[TxtParsingState:state] {
         if (val_result.error) {
             return val_result;
         };
-        :JSON:val_json = [val_result.json].unwrap;
+        %JSON:val_json = [val_result.json].unwrap;
 
         [list.items].append[val_json];
 
@@ -167,7 +167,7 @@ JSONParsingResult#parse_txt_JSON_list[TxtParsingState:state] {
 JSONParsingResult#parse_txt_JSON_obj[TxtParsingState:state] {
     // we already have the opening curly brace matched
     JSONSpan:obj_span = JSONSpan [state.pos-1, 0];
-    JSONObj:obj = JSONObj [obj_span, [Str] [], [:JSON] []];
+    JSONObj:obj = JSONObj [obj_span, [Str] [], [%JSON] []];
 
     L:start_pos = state.pos;
     Token:start_token = [state].next_token;
@@ -193,7 +193,7 @@ JSONParsingResult#parse_txt_JSON_obj[TxtParsingState:state] {
         if (val_result.error) {
             return val_result;
         };
-        :JSON:val_json = [val_result.json].unwrap;
+        %JSON:val_json = [val_result.json].unwrap;
         
         [obj.keys].append[key_str];
         [obj.values].append[val_json];
