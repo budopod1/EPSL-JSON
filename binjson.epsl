@@ -1,5 +1,6 @@
 %import json;
 %import conversion;
+%import linkiconv;
 
 BinParsingState {
     W:i,
