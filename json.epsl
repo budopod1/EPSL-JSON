@@ -103,7 +103,7 @@ JSONParsingResult {
 
 $JSON#parse_BinJSON[Str:data] {
     if ([data].len == 0 || data[0] != 'B') {
-        abort "Invalid BinJSON start";
+        abort ["Invalid BinJSON start"];
     };
 
     [Str]:strs = [Str] [];
@@ -118,7 +118,7 @@ $JSON#parse_BinJSON[Str:data] {
     $JSON:result = parse_BinJSON_val[initial_id][data][state];
 
     if ([data].len != state.i) {
-        abort "Invalid BinJSON: parsing finished; more data available";
+        abort ["Invalid BinJSON: parsing finished; more data available"];
     };
 
     return result;
@@ -177,7 +177,7 @@ Str#[$JSON:json].stringify {
     } given (json as JSONStr:str) {
         return string_to_txt_JSON[str.val];
     } else {
-        abort "Invalid JSON";
+        abort ["Invalid JSON"];
     };
 }
 
@@ -257,7 +257,7 @@ JSONParsingError?#check [$JSON:json] against [$JSONShape:shape] {
             return json error ["Expected string"] at [json];
         };
     } else {
-        abort "Invalid JSON Shape";
+        abort ["Invalid JSON Shape"];
     };
 }
 
@@ -337,14 +337,14 @@ Str#[$JSON:json].get_str {
 
 $JSON#[JSONObj:obj].get[Str:key] {
     if ([obj.keys].len != [obj.values].len) {
-        abort "JSONObj number of keys and values must match";
+        abort ["JSONObj number of keys and values must match"];
     };
     for (W:i enumerating obj.keys) {
         if ([obj.keys[i]] equals [key]) {
             return obj.values[i];
         };
     };
-    abort "Requested key '{}' not found" % key;
+    abort ["Requested key '{}' not found" % key];
 }
 
 Bool#[JSONObj:obj].contains_key[Str:target_key] {

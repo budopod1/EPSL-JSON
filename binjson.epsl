@@ -12,7 +12,7 @@ W#take_VW_uint[Str:data][BinParsingState:state] {
     W:shift = 0;
     while (true) {
         if ([data].len == state.i) {
-            abort "Invalid BinJSON VW int";
+            abort ["Invalid BinJSON VW int"];
         };
         Byte:curByte = data[state.i++];
         result += [[(W)curByte] & [127]] << [shift];
@@ -26,7 +26,7 @@ W#take_VW_uint[Str:data][BinParsingState:state] {
 Str#take_Str[Str:data][BinParsingState:state] {
     W:idx = take_VW_uint[data][state];
     if (idx >= [state.strs].len) {
-        abort "Invalid BinJSON string index";
+        abort ["Invalid BinJSON string index"];
     };
     return state.strs[idx];
 }
@@ -35,14 +35,14 @@ Str#take_bytes[Str:data][BinParsingState:state][W:count] {
     W:start = state.i;
     state.i += count;
     if (state.i > [data].len) {
-        abort "Invalid BinJSON";
+        abort ["Invalid BinJSON"];
     };
     return [data].slice[start][state.i];
 }
 
 Byte#take_byte[Str:data][BinParsingState:state] {
     if ([data].len == state.i) {
-        abort "Invalid BinJSON";
+        abort ["Invalid BinJSON"];
     };
     return data[state.i++];
 }
@@ -128,7 +128,7 @@ $JSON#parse_BinJSON_val[Byte:id][Str:data][BinParsingState:state] {
         return parse_BinJSONList_multityped[data][state];
     }
     {
-        abort "Invalid BinJSON ID";
+        abort ["Invalid BinJSON ID"];
     };
 }
 
@@ -179,7 +179,7 @@ Byte#get_BinJSON_id[$JSON:json] {
     } given (json as JSONStr:str) {
         return '\x07';
     } else {
-        abort "Invalid JSON";
+        abort ["Invalid JSON"];
     };
 }
 
@@ -231,6 +231,6 @@ Byte#get_BinJSON_id[$JSON:json] {
     } given (json as JSONStr:str) {
         write_BinJSON_str[str.val] to: [target] str_table: [str_table];
     } else {
-        abort "Invalid JSON";
+        abort ["Invalid JSON"];
     };
 }
