@@ -184,13 +184,13 @@ Byte#get_BinJSON_id[$JSON:json] {
 }
 
 #write_BinJSON_str[Str:str] to: [Str:target] str_table: [[Str]:str_table] {
-    for (L:i enumerating str_table) {
+    for (W:i enumerating str_table) {
         if ([str] equals [str_table[i]]) {
             write_VW_uint[i] to: [target];
             return;
         };
     };
-    write_VW_uint[[str_table].len] to: [target];
+    write_VW_uint[(W)[str_table].len] to: [target];
     [str_table].append[str];
 }
 
@@ -206,7 +206,7 @@ Byte#get_BinJSON_id[$JSON:json] {
             [target].append['\0'];
             return;
         };
-        write_VW_uint[[list.items].len] to: [target];
+        write_VW_uint[(W)[list.items].len] to: [target];
         if ([list].has_homogeneous_ids) {
             [target].append[get_BinJSON_id[list.items[0]]];
             for ($JSON:item in list.items) {
@@ -221,7 +221,7 @@ Byte#get_BinJSON_id[$JSON:json] {
     } given (json as JSONNull:null_) {
         // this intentionally does nothing
     } given (json as JSONObj:obj) {
-        write_VW_uint[[obj.keys].len] to: [target];
+        write_VW_uint[(W)[obj.keys].len] to: [target];
         for (L:i enumerating obj.keys) {
             write_BinJSON_str[obj.keys[i]] to: [target] str_table: [str_table];
             $JSON:value = obj.values[i];
