@@ -383,13 +383,13 @@ Str#stringify error [JSONParsingError:error] in file [Str:file] with content [St
             exerpt_end_line = [lines].len;
             exerpt_end_col = [line].len;
         };
+        [line].append[byte];
         if (byte == '\n') {
             [lines].append[line];
             line = [""].clone;
-        } else {
-            [line].append[byte];
         };
     };
+    [line].append['\n'];
     [lines].append[line];
 
     if (error.start_index >= [txt].len) {
@@ -412,7 +412,6 @@ Str#stringify error [JSONParsingError:error] in file [Str:file] with content [St
     if (exerpt_start_line == exerpt_end_line) {
         Str:line = lines[exerpt_start_line];
         [result].extend[line];
-        [result].append['\n'];
 
         L:offset_size = estimate monospace len of
             [[line].slice[0][exerpt_start_col]];
@@ -455,7 +454,6 @@ Str#stringify error [JSONParsingError:error] in file [Str:file] with content [St
             [result].extend[style [prefix] with [TXT_LIGHT_GREEN]];
 
             [result].extend[lines[line_index]];
-            [result].append['\n'];
         };
     };
 
