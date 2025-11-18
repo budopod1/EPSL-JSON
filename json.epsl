@@ -129,9 +129,9 @@ Str#serialize_BinJSON[$JSON:json] {
     Str:result_body = Str [];
     write_BinJSON[json] to: [result_body] str_table: [str_table];
     Str:result = Str ['B'];
-    write_VW_uint[(W)[str_table].len] to: [result];
+    write_VW_uint[[str_table].len#W] to: [result];
     for (Str:str in str_table) {
-        write_VW_uint[(W)[str].len] to: [result];
+        write_VW_uint[[str].len#W] to: [result];
         [result].extend[str];
     };
     [result].append[get_BinJSON_id[json]];
@@ -191,19 +191,19 @@ JSONParsingError#json error [Str:msg] at [$JSON:json] {
 
 JSONParsingError?#check [$JSON:json] against [$JSONShape:shape] {
     given (shape as JSONBoolShape:bool) {
-        if ((JSONBool?)json) {
+        if json#JSONBool? {
             return null;
         } else {
             return json error ["Expected bool"] at [json];
         };
     } given (shape as JSONDoubleShape:double) {
-        if ((JSONDouble?)json) {
+        if json#JSONDouble? {
             return null;
         } else {
             return json error ["Expected double"] at [json];
         };
     } given (shape as JSONIntShape:int_shape) {
-        if ((JSONInt?)json) {
+        if json#JSONInt? {
             return null;
         } else {
             return json error ["Expected int"] at [json];
@@ -251,7 +251,7 @@ JSONParsingError?#check [$JSON:json] against [$JSONShape:shape] {
             return json error ["Expected string"] at [json];
         };
     } given (shape as JSONStrShape:str_shape) {
-        if ((JSONStr?)json) {
+        if json#JSONStr? {
             return null;
         } else {
             return json error ["Expected string"] at [json];
@@ -308,31 +308,31 @@ JSONParsingError?#check [JSONObj:obj] against [JSONAnyKeysShape:shape] {
 }
 
 Bool#[$JSON:json].get_bool {
-    return [(JSONBool?)json].unwrap.val;
+    return [json#JSONBool?].unwrap.val;
 }
 
 R#[$JSON:json].get_double {
-    return [(JSONDouble?)json].unwrap.val;
+    return [json#JSONDouble?].unwrap.val;
 }
 
 Z#[$JSON:json].get_int {
-    return [(JSONInt?)json].unwrap.val;
+    return [json#JSONInt?].unwrap.val;
 }
 
 [$JSON]#[$JSON:json].get_list {
-    return [(JSONList?)json].unwrap.items;
+    return [json#JSONList?].unwrap.items;
 }
 
 Bool#[$JSON:json].is_null {
-    return ![(JSONNull?)json].is_null;
+    return ![json#JSONNull?].is_null;
 }
 
 JSONObj#[$JSON:json].get_obj {
-    return [(JSONObj?)json].unwrap;
+    return [json#JSONObj?].unwrap;
 }
 
 Str#[$JSON:json].get_str {
-    return [(JSONStr?)json].unwrap.val;
+    return [json#JSONStr?].unwrap.val;
 }
 
 $JSON#[JSONObj:obj].get[Str:key] {

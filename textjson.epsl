@@ -138,7 +138,7 @@ JSONParsingResult#parse_txt_JSON_list[TxtParsingState:state] {
 
     L:start_pos = state.pos;
     Token:start_token = [state].next_token;
-    if ([start_token.str] equals [(Str?)"]"]) {
+    if ([start_token.str] equals ["]"#Str?]) {
         list_span.end = start_token.end;
         return success result [list];
     };
@@ -157,7 +157,7 @@ JSONParsingResult#parse_txt_JSON_list[TxtParsingState:state] {
         given ([end_token].expect_any[[Str] [",", "]"]] as JSONParsingError:error) {
             return JSONParsingResult [null, error];
         };
-        if ([end_token.str] equals [(Str?)"]"]) {
+        if ([end_token.str] equals ["]"#Str?]) {
             list_span.end = end_token.end;
             return success result [list];
         };
@@ -171,7 +171,7 @@ JSONParsingResult#parse_txt_JSON_obj[TxtParsingState:state] {
 
     L:start_pos = state.pos;
     Token:start_token = [state].next_token;
-    if ([start_token.str] equals [(Str?)"}"]) {
+    if ([start_token.str] equals ["}"#Str?]) {
         obj_span.end = start_token.end;
         return success result [obj];
     };
@@ -183,7 +183,7 @@ JSONParsingResult#parse_txt_JSON_obj[TxtParsingState:state] {
         if (key_result.error) {
             return key_result;
         };
-        Str:key_str = [(JSONStr?)[key_result.json].unwrap].unwrap.val;
+        Str:key_str = [[key_result.json].unwrap#JSONStr?].unwrap.val;
         
         given ([[state].next_token].expect_any[[Str] [":"]] as JSONParsingError:error) {
             return JSONParsingResult [null, error];
@@ -202,7 +202,7 @@ JSONParsingResult#parse_txt_JSON_obj[TxtParsingState:state] {
         given ([end_token].expect_any[[Str] [",", "}"]] as JSONParsingError:error) {
             return JSONParsingResult [null, error];
         };
-        if ([end_token.str] equals [(Str?)"}"]) {
+        if ([end_token.str] equals ["}"#Str?]) {
             obj_span.end = end_token.end;
             return success result [obj];
         };
@@ -244,7 +244,7 @@ JSONParsingError?#parse_JSON_txt_str_escape [TxtParsingState:state] [Token:token
                     msg: ["Expected four hex digits after '\\u'"]
                     at: [state.pos];
             };
-            [utf16].append[(W16)parsed];
+            [utf16].append[parsed#W16];
         };
         state.pos--; // move back because this function is expected to leave the last character unconsumed
         given (utf16_to_utf_8[utf16] as Str:utf8) {

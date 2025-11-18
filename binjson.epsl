@@ -15,7 +15,7 @@ W#take_VW_uint[Str:data][BinParsingState:state] {
             abort ["Invalid BinJSON VW int"];
         };
         Byte:curByte = data[state.i++];
-        result += [[(W)curByte] & [127]] << [shift];
+        result += [[curByte#W] & [127]] << [shift];
         shift += 7;
         if ([curByte] & [128] == 0) {
             return result;
@@ -48,7 +48,7 @@ Byte#take_byte[Str:data][BinParsingState:state] {
 }
 
 JSONBool#parse_BinJSONBool[Str:data][BinParsingState:state] {
-    return JSONBool [/*span:*/null, (Bool)take_byte[data][state]];
+    return JSONBool [/*span:*/null, take_byte[data][state]#Bool];
 }
 
 JSONDouble#parse_BinJSONDouble[Str:data][BinParsingState:state] {
@@ -58,7 +58,7 @@ JSONDouble#parse_BinJSONDouble[Str:data][BinParsingState:state] {
 }
 
 JSONInt#parse_BinJSONInt[Str:data][BinParsingState:state] {
-    return JSONInt [/*span:*/null, (Z)take_VW_uint[data][state]];
+    return JSONInt [/*span:*/null, take_VW_uint[data][state]#Z];
 }
 
 JSONList#parse_BinJSONList[Str:data][BinParsingState:state] {
@@ -134,10 +134,10 @@ $JSON#parse_BinJSON_val[Byte:id][Str:data][BinParsingState:state] {
 
 #write_VW_uint[W:val] to: [Str:target] {
     while (true) {
-        Byte:b = (Byte)([127] & [val]);
+        Byte:b = ([127] & [val])#Byte;
         val = [val] >> [7];
         if (val) {
-            b += (Byte)128;
+            b += 128#Byte;
         };
         [target].append[b];
         if (!val) {
@@ -190,23 +190,23 @@ Byte#get_BinJSON_id[$JSON:json] {
             return;
         };
     };
-    write_VW_uint[(W)[str_table].len] to: [target];
+    write_VW_uint[[str_table].len#W] to: [target];
     [str_table].append[str];
 }
 
 #write_BinJSON[$JSON:json] to: [Str:target] str_table: [[Str]:str_table] {
     given (json as JSONBool:bool) {
-        [target].append[(Byte)bool.val];
+        [target].append[bool.val#Byte];
     } given (json as JSONDouble:double) {
         [target].extend[[double.val].pack];
     } given (json as JSONInt:int) {
-        write_VW_uint[(W)int.val] to: [target];
+        write_VW_uint[int.val#W] to: [target];
     } given (json as JSONList:list) {
         if ([list.items].len == 0) {
             [target].append['\0'];
             return;
         };
-        write_VW_uint[(W)[list.items].len] to: [target];
+        write_VW_uint[[list.items].len#W] to: [target];
         if ([list].has_homogeneous_ids) {
             [target].append[get_BinJSON_id[list.items[0]]];
             for ($JSON:item in list.items) {
@@ -221,7 +221,7 @@ Byte#get_BinJSON_id[$JSON:json] {
     } given (json as JSONNull:null_) {
         // this intentionally does nothing
     } given (json as JSONObj:obj) {
-        write_VW_uint[(W)[obj.keys].len] to: [target];
+        write_VW_uint[[obj.keys].len#W] to: [target];
         for (L:i enumerating obj.keys) {
             write_BinJSON_str[obj.keys[i]] to: [target] str_table: [str_table];
             $JSON:value = obj.values[i];
